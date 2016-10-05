@@ -13,19 +13,9 @@ import java.util.Map.Entry;
 
 import org.sqlite.util.StringUtils;
 
-// http://www.sqlitetutorial.net/sqlite-java/
+import voyairbooking.Utils;
 
-/**
- * @author Shaun
- *
- */
 public class SQL_Driver {
-	private String replaceCommaWithEndParen(String str){
-		if(str.endsWith(",")){
-			str = str.substring(0, str.length()-1) + ")";
-		}
-		return str;
-	}
 	private HashMap<String, ArrayList<String>> schema = new HashMap<String, ArrayList<String>>();
 	private Connection con;
 	private Statement stmnt;
@@ -151,7 +141,7 @@ public class SQL_Driver {
 		for(String entry : fields){
 			sql += entry + ",";
 		}
-		sql = this.replaceCommaWithEndParen(sql);
+		sql = Utils.replaceCommaWithEndParen(sql);
 		return this.execute(sql);
 	}
 	public boolean insert(String table_name, Map<String, String> fields){
@@ -163,8 +153,8 @@ public class SQL_Driver {
 			sql += key + ",";
 			values += "'"+ value.replaceAll(",", "', '") + "',";
 		}
-		sql = this.replaceCommaWithEndParen(sql);
-		values = this.replaceCommaWithEndParen(values);
+		sql = Utils.replaceCommaWithEndParen(sql);
+		values = Utils.replaceCommaWithEndParen(values);
 		return this.execute(sql + values);
 	}
 
@@ -189,30 +179,10 @@ public class SQL_Driver {
 		sql += " WHERE " + where;
 		return this.execute(sql);
 	}
-	
-	//Too lazy to do real testing.
-	static String getRandomWord(int length) {
-		String r = "";
-		for(int i = 0; i < length; i++) {
-			r += (char)(Math.random() * 26 + 97);
-		}
-		return r;
-	}
-
-	public static void main(String[] args) throws SQLException {
-		SQL_Driver sqld = new SQL_Driver();
-		ArrayList<String> description = new ArrayList<String>();
-		description.add("name string");
-		description.add("inventory int");
-		sqld.create_table("warehouse", description);
-		Map<String, String> item = new HashMap<String, String>();
-		String aWord = getRandomWord(10);
-		item.put("name, inventory", aWord +  ", 25");
-		sqld.insert("warehouse", item);
-		item.put("name, inventory", getRandomWord(5) +", 50");
-		sqld.insert("warehouse", item);
-		HashMap<String, String> updateMe = new HashMap<String, String>();
-		updateMe.put("inventory", "40");
-		sqld.update("warehouse", updateMe, "name = " + aWord);
+	public boolean truncate(String table_name){
+		// Vaccum is memory clean up or something since sqlite doesn't have a truncate.
+		String sql = "DELETE FROM " + table_name + "; VACUUM"; 
+		return this.execute(sql);
+		
 	}
 }
