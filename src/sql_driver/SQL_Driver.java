@@ -141,7 +141,7 @@ public class SQL_Driver {
 		for(String entry : fields){
 			sql += entry + ",";
 		}
-		sql = Utils.replaceCommaWithEndParen(sql);
+		sql = Utils.replaceStringEnding(sql, ")");
 		return this.execute(sql);
 	}
 	public boolean insert(String table_name, Map<String, String> fields){
@@ -153,8 +153,8 @@ public class SQL_Driver {
 			sql += key + ",";
 			values += "'"+ value.replaceAll(",", "', '") + "',";
 		}
-		sql = Utils.replaceCommaWithEndParen(sql);
-		values = Utils.replaceCommaWithEndParen(values);
+		sql = Utils.replaceStringEnding(sql, ")");
+		values = Utils.replaceStringEnding(values, ")");
 		return this.execute(sql + values);
 	}
 
@@ -167,7 +167,7 @@ public class SQL_Driver {
 		for(Entry<String, String> entry : update_to.entrySet() ){
 			sql += entry.getKey() + " = " + entry.getValue() + ",";
 		}
-		sql = sql.substring(0, sql.length()-1);
+		sql = Utils.replaceStringEnding(sql, "");
 		if(!where.contains("='") || !where.contains("= '")){
 			String newWhere = "";
 			for(String splits : where.split(",")){
