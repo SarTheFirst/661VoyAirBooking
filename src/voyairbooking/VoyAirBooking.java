@@ -2,6 +2,7 @@ package voyairbooking;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -11,7 +12,6 @@ import java.util.Scanner;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringEscapeUtils;
 
 import sql_driver.SQL_Driver;
 
@@ -19,7 +19,7 @@ public class VoyAirBooking {
 	private SQL_Driver sqld;
 	private CommandLine cl;
 	public VoyAirBooking(String[] args) throws SQLException{
-		this.sqld = new SQL_Driver(false); //debug = false
+		this.sqld = new SQL_Driver(true); //debug = false
 		this.cl = Utils.parseCommandLine(args);
 
 	}
@@ -36,12 +36,12 @@ public class VoyAirBooking {
 			String[] headers = scanner.nextLine().split(",");
 			ArrayList<String> fields = new ArrayList<String>();
 			for (int i = 0; i < headers.length; i++){
-				String str =  "'" + headers[i].toLowerCase() + "' string";
+				String str =  "'" + headers[i].toLowerCase() + "' integer";
 				if(i == 0 && str.contains(tableName)){
 					str += " primary key";
 				}
 				else if(i == 0){
-					fields.add("'" + tableName + "_id' string primary key");
+					fields.add("'" + tableName + "_id' integer primary key AUTOINCREMENT");
 				}
 				else if(str.contains("id")){
 					String[] reference = headers[i].split("\\s+");
@@ -49,24 +49,42 @@ public class VoyAirBooking {
 					if(reference.length == 2){
 						other_table = reference[0].toLowerCase();
 					}
-					str += " REFERENCES " + other_table + "(" + other_table + "_id) ON UPDATE CASCADE";
+					str += "string REFERENCES " + other_table + "(" + other_table + "_id) ON UPDATE CASCADE";
 				}
 				fields.add(str);
 			}
 			this.sqld.create_table(tableName, fields);
-			
-			while (scanner.hasNext()){
-				String[] line = scanner.nextLine().split(",");
-				Map<String, String> entries = new HashMap<String, String>();
-				for(int i = 0; i < headers.length; i++){
-					// WHAT DO YOU MEAN I'VE BEEN DOING THIS FOR YEARS AND JUST DISCOVERED THIS LIBRARY.
-					entries.put("'"+headers[i]+"'", StringEscapeUtils.escapeSql(line[i]));
+			boolean try_select = true;
+			int row_count = this.sqld.count_rows(tableName) + 1;
+			if(row_count != Utils.countLines(f.toString())){
+				while (scanner.hasNext()){
+					String[] line = scanner.nextLine().split(",");
+					if(row_count != 0 || try_select){
+						ArrayList<String> tmp = new ArrayList<String>();
+						tmp.add(headers[0].toLowerCase());
+						if(this.sqld.select_first(tableName, tmp, headers[0].toLowerCase() + "==" + line[0]).isEmpty()){
+							try_select = false;
+						}
+					}
+					if(!try_select){
+						Map<String, String> entries = new HashMap<String, String>();
+						for(int i = 0; i < headers.length; i++){
+							entries.put("'"+headers[i]+"'", line[i]);
+						}
+						this.sqld.insert(tableName, entries);
+					}
 				}
-				this.sqld.insert(tableName, entries);
 			}
 
 			scanner.close();
 		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			System.err.print("Coutning error");
+			e.printStackTrace();
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

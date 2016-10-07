@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.sqlite.util.StringUtils;
 
 import voyairbooking.Utils;
@@ -101,10 +102,18 @@ public class SQL_Driver {
 	}
 	public HashMap<String, String> select_first(String table_name, ArrayList<String> select, String where, String other) throws SQLException{
 		HashMap<String, String> toReturn = new HashMap<String, String>();
-
-		String sql = "Select " +  StringUtils.join(select, ",") + " FROM " + table_name;
+		String sel = StringUtils.join(select,",");
+		if(!sel.contains("count(*)")){
+			sel = "'" + StringEscapeUtils.escapeSql(sel) + "'";
+		}
+		String sql = "Select " +  sel + " FROM " + table_name + " ";
 		if(!where.isEmpty()){
-			sql += " WHERE " + where;
+			String newWhere = "WHERE '";
+			for(String splits : where.split(",")){
+				String[] res = splits.split("=");
+				newWhere += res[0].trim().replace("'", "") + "'== '" + res[2].trim().replace("'", "") + "'";
+			}
+			sql += newWhere;
 		}
 		sql += " LIMIT 1 ";
 		if(!other.isEmpty()){
@@ -157,7 +166,8 @@ public class SQL_Driver {
 			String key = entry.getKey();
 			String value = entry.getValue();
 			sql += key + ",";
-			values += "'"+ value.replaceAll(",", "', '") + "',";
+			// WHAT DO YOU MEAN I'VE BEEN DOING THIS FOR YEARS AND JUST DISCOVERED THIS LIBRARY.
+			values += "'"+ StringEscapeUtils.escapeSql(value) + "',";
 		}
 		sql = Utils.replaceStringEnding(sql, ")");
 		values = Utils.replaceStringEnding(values, ")");
@@ -189,6 +199,11 @@ public class SQL_Driver {
 		// Vaccum is memory clean up or something since sqlite doesn't have a truncate.
 		String sql = "DELETE FROM " + table_name + "; VACUUM"; 
 		return this.execute(sql);
-		
+	}
+	public int count_rows(String table_name) throws SQLException{
+		ArrayList<String> count = new ArrayList<String>();
+		count.add("count(*)");
+		HashMap<String, String> res = this.select_first(table_name, count);
+		return Integer.parseInt(res.get("count(*)"));
 	}
 }
