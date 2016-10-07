@@ -19,17 +19,22 @@ public class SQL_Driver {
 	private HashMap<String, ArrayList<String>> schema = new HashMap<String, ArrayList<String>>();
 	private Connection con;
 	private Statement stmnt;
-	public SQL_Driver(String filename) throws SQLException{
+	public Boolean debug;
+	public SQL_Driver(String filename, boolean debug) throws SQLException{
 		this.con = DriverManager.getConnection("jdbc:sqlite:" + filename);
 		this.stmnt = this.con.createStatement();
+		this.debug = debug;
 	}
 	public SQL_Driver() throws SQLException{
-		this("program.db");
+		this("program.db", false);
 	}
-
+	public SQL_Driver(boolean debug) throws SQLException{
+		this("program.db", debug);
+	}
 	public boolean execute(String sql){
 		try{
 			boolean res = this.stmnt.execute(sql);
+			if(this.debug) System.out.println("DEBUG: " + sql);
 			return res;
 		} catch (SQLException e) {
 			System.err.println("Failed to execute the SQL query: " + sql);
@@ -40,6 +45,7 @@ public class SQL_Driver {
 	public ResultSet executeQuery(String sql){
 		try {
 			ResultSet res = this.stmnt.executeQuery(sql);
+			if(this.debug) System.out.println("DEBUG: " + sql);
 			return res;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
