@@ -1,121 +1,133 @@
 package voyairbooking;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-import org.apache.commons.cli.CommandLine;
 import org.apache.commons.io.FilenameUtils;
-
 import sql_driver.SQL_Driver;
 
 public class VoyAirBooking {
 	private SQL_Driver sqld;
-	private CommandLine cl;
-	public VoyAirBooking(String[] args) throws SQLException{
+	public VoyAirBooking() throws SQLException{
 		this.sqld = new SQL_Driver(true); //debug = false
-		this.cl = Utils.parseCommandLine(args);
 
 	}
 	public void readInData(File f){
-		// Look man, don't reinvent the wheel when apache's done that for you...
-		String tableName = FilenameUtils.getBaseName(f.getName()).toLowerCase();
-		if (tableName.endsWith("s")){
-			// In addition to the whole consistency thing, traditionally databases are singular, I've experienced
-			tableName = Utils.replaceStringEnding(tableName, "");
-		}
-		Scanner scanner;
 		try {
-			scanner = new Scanner(f);
-			String[] headers = scanner.nextLine().split(",");
-			ArrayList<String> fields = new ArrayList<String>();
-			for (int i = 0; i < headers.length; i++){
-				String str =  "'" + headers[i].toLowerCase() + "' integer";
-				if(i == 0 && str.contains(tableName)){
-					str += " primary key";
+			String tableName = FilenameUtils.getBaseName(f.getName()).toLowerCase();
+			if (tableName.endsWith("s")){
+				tableName = Utils.replaceStringEnding(tableName, "");
+			}
+			boolean created_id = false;
+			Scanner scanner = new Scanner(f);
+			List<String> headers = Utils.parseLine(scanner.nextLine());
+			HashMap<String, String> fields = new HashMap<String, String>();
+			for(int i = 0; i < headers.size(); i++){
+				String fname = headers.get(i).toLowerCase().replace(" ", "_");
+				if(!fname.endsWith("_id") && i == 0){
+					fields.put(tableName + "_id", "INTEGER PRIMARY KEY AUTOINCREMENT");
+					created_id = true;
+					headers.set(i,tableName + "_id");
 				}
-				else if(i == 0){
-					fields.add("'" + tableName + "_id' integer primary key AUTOINCREMENT");
+				else if(fname.contains("_id") && i != 0){
+					String[] options = fname.split("_");
+					String other_id = options[options.length-2];
+					fields.put(fname, "STRING REFERENCES " + other_id + "(" + other_id + "_id) ON UPDATE CASCADE");
+					headers.set(i, fname);
 				}
-				else if(str.contains("id")){
-					String[] reference = headers[i].split("\\s+");
-					String other_table = reference[1].toLowerCase();;
-					if(reference.length == 2){
-						other_table = reference[0].toLowerCase();
-					}
-					str += "string REFERENCES " + other_table + "(" + other_table + "_id) ON UPDATE CASCADE";
+				else{
+					fields.put(fname, "STRING");
+					headers.set(i, fname);
 				}
-				fields.add(str);
 			}
 			this.sqld.create_table(tableName, fields);
-			boolean try_select = true;
-			int row_count = this.sqld.count_rows(tableName) + 1;
-			if(row_count != Utils.countLines(f.toString())){
-				while (scanner.hasNext()){
-					String[] line = scanner.nextLine().split(",");
-					if(row_count != 0 || try_select){
-						ArrayList<String> tmp = new ArrayList<String>();
-						tmp.add(headers[0].toLowerCase());
-						if(this.sqld.select_first(tableName, tmp, headers[0].toLowerCase() + "==" + line[0]).isEmpty()){
-							try_select = false;
-						}
-					}
-					if(!try_select){
-						Map<String, String> entries = new HashMap<String, String>();
-						for(int i = 0; i < headers.length; i++){
-							entries.put("'"+headers[i]+"'", line[i]);
-						}
-						this.sqld.insert(tableName, entries);
-					}
-				}
-			}
 
+			if(this.sqld.count_rows(tableName) != Utils.countLines(f.toString())){
+				ArrayList<Map<String, String>> rows = new ArrayList<Map<String, String>>();
+				while(scanner.hasNext()){
+					HashMap<String, String> entries = new HashMap<String, String>();
+					List<String> line = Utils.parseLine(scanner.nextLine());
+					if(created_id){
+						headers.remove(0);
+						created_id = false;
+					}
+					for(int i = 0; i < headers.size(); i++){
+						entries.put(headers.get(i), line.get(i));
+					}
+					rows.add(entries);
+				}
+				this.sqld.batch_insert(tableName, rows);
+
+			}
 			scanner.close();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			System.err.print("Coutning error");
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (SQLException | IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public static void main(String[] args) {
-		try {
-			VoyAirBooking vab = new VoyAirBooking(args);
-			if(vab.cl.hasOption("r")){
-				// Delete db and run
-			}
-			else if(vab.cl.hasOption("s")){
-				// Run as text-only
-			}
-			else{
-				// get all the data files
-				File dir = Paths.get(System.getProperty("user.dir"), "data").toFile();
-
-				File[] directoryListing = dir.listFiles();
-				if (directoryListing != null) {
-					for (File child : directoryListing) {
-						vab.readInData(child);
-					}
-				} 
-				else {
+	public void read_in_files(){
+		File dir = Paths.get(System.getProperty("user.dir"), "data").toFile();
+		File[] directoryListing = dir.listFiles();
+		if (directoryListing != null) {
+			for (File child : directoryListing) {
+				if(!child.getName().startsWith(".")){
+					this.readInData(child);
 				}
 			}
 		}
-		catch (SQLException e) {
-			System.err.println("Unable to connect to database.");
+		System.out.println("Done.");
+	}
+	public static void main(String[] args) {
+		ArrayList<String> arguments = new ArrayList<String>();
+		for(String s : args){
+			arguments.add(s.toLowerCase());
 		}
 
+		VoyAirBooking vab;
+		try {
+			vab = new VoyAirBooking();
+			if(arguments.contains("-t") || arguments.contains("--text-only")){
+				if(arguments.contains("-r") || arguments.contains("--reset")){
+					vab.sqld.drop_all();
+					vab.read_in_files();
+				}
+				else if(arguments.contains("-h") || arguments.contains("--help")){
+					System.out.println("Welcome to VoyAirBooking!\n Available commands: ");
+					System.out.println("-r [--reset] drops all tables in the database and repopulates\n\tthem with data within the data/ subfolder.");
+					System.out.println("-t [--text-only] runs application through text-only interface.");
+					System.out.println("-g [--graphics] runs application with graphical interface. [default]");
+					System.out.println("-h [--help] displays this help text.");
+				}
+				else{
+					Scanner scanner = new Scanner(System.in);
+					System.out.println("Where are you headed? Do you need to see the cities? Y/n");
+					String know_where = scanner.nextLine();
+					if(know_where.equalsIgnoreCase("y") || know_where.equalsIgnoreCase("yes")){
+						ArrayList<String> listOfCities = vab.sqld.select("airport", "city");
+						Collections.sort(listOfCities, String.CASE_INSENSITIVE_ORDER);
+						for(String city :listOfCities){
+							System.out.println(city);
+						}
+						System.out.println("\nWhere are you headed?");
+					}
+					String going_to = scanner.nextLine();
+					ArrayList<HashMap<String, String>> res = vab.sqld.select("airport", "*", "city="+going_to);
+					scanner.close();
+				}
+			}
+			else{
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

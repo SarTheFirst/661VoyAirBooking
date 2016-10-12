@@ -1,6 +1,7 @@
 package sql_driver;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -11,20 +12,40 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.sqlite.util.StringUtils;
 
 import voyairbooking.Utils;
 
 public class SQL_Driver {
 	private HashMap<String, ArrayList<String>> schema = new HashMap<String, ArrayList<String>>();
+	private String db_name;
 	private Connection con;
 	private Statement stmnt;
 	public Boolean debug;
+	public boolean close(){
+		try {
+			this.stmnt.close();
+			this.con.close();
+
+		} catch (SQLException e) {
+			return false;
+		}
+		return true;
+	}
+	public boolean open(){
+		try {
+			this.con = DriverManager.getConnection("jdbc:sqlite:" + this.db_name);
+			this.stmnt = this.con.createStatement();
+			return true;
+		} catch (SQLException e) {
+			System.err.println("Could not connect to database");
+			return false;
+		}
+
+	}
 	public SQL_Driver(String filename, boolean debug) throws SQLException{
-		this.con = DriverManager.getConnection("jdbc:sqlite:" + filename);
-		this.stmnt = this.con.createStatement();
 		this.debug = debug;
+		this.db_name = filename;
 	}
 	public SQL_Driver() throws SQLException{
 		this("program.db", false);
@@ -34,9 +55,14 @@ public class SQL_Driver {
 	}
 	public boolean execute(String sql){
 		try{
-			boolean res = this.stmnt.execute(sql);
-			if(this.debug) System.out.println("DEBUG: " + sql);
-			return res;
+			if(this.open()){
+				boolean res = this.stmnt.execute(sql);
+				if(this.debug) System.out.println("DEBUG: " + sql);
+				return res;
+			}
+			else{
+				return false;
+			}
 		} catch (SQLException e) {
 			System.err.println("Failed to execute the SQL query: " + sql);
 			e.printStackTrace();
@@ -45,9 +71,14 @@ public class SQL_Driver {
 	}
 	public ResultSet executeQuery(String sql){
 		try {
-			ResultSet res = this.stmnt.executeQuery(sql);
-			if(this.debug) System.out.println("DEBUG: " + sql);
-			return res;
+			if(this.open()){
+				ResultSet res = this.stmnt.executeQuery(sql);
+				if(this.debug) System.out.println("DEBUG: " + sql);
+				return res;
+			}
+			else{
+				return null;
+			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			System.err.println("Failed to execute the SQL query: " + sql);
@@ -59,9 +90,24 @@ public class SQL_Driver {
 	public ArrayList<HashMap<String, String>> select(String table_name) throws SQLException{
 		return select(table_name, new ArrayList<String>() {{ add("*");}});
 	}
+	@SuppressWarnings("serial")
+	public ArrayList<String> select(String table_name, String select) throws SQLException{
+		 ArrayList<HashMap<String, String>> res = select(table_name, new ArrayList<String>() {{ add(select);}});
+		 ArrayList<String> results = new ArrayList<String>();
+		 for(HashMap<String, String> row : res){
+			 results.add(row.get(select));
+		 }
+		 return results;
+	}
+	
 	public ArrayList<HashMap<String, String>> select(String table_name, ArrayList<String> select) throws SQLException{
 		return select(table_name, select, "");
 	}
+	@SuppressWarnings("serial")
+	public ArrayList<HashMap<String, String>> select(String table_name, String select, String where) throws SQLException{
+		return select(table_name, new ArrayList<String>() {{ add(select);}}, where);
+	}
+
 	public ArrayList<HashMap<String, String>> select(String table_name, ArrayList<String> select, String where) throws SQLException{
 		return select(table_name, select, where, "");
 	}
@@ -104,7 +150,7 @@ public class SQL_Driver {
 		HashMap<String, String> toReturn = new HashMap<String, String>();
 		String sel = StringUtils.join(select,",");
 		if(!sel.contains("count(*)")){
-			sel = "'" + StringEscapeUtils.escapeSql(sel) + "'";
+			sel = "'" + sqlProof(sel) + "'";
 		}
 		String sql = "Select " +  sel + " FROM " + table_name + " ";
 		if(!where.isEmpty()){
@@ -151,23 +197,45 @@ public class SQL_Driver {
 		}
 		return null;
 	}
-	public boolean create_table(String table_name, ArrayList<String> fields){
+	public boolean create_table(String table_name, HashMap<String, String> fields){
 		String sql = "CREATE TABLE IF NOT EXISTS " + table_name + " (";
-		for(String entry : fields){
-			sql += entry + ",";
+		for (Map.Entry<String, String> entry : fields.entrySet()){
+			sql += sqlProof(entry.getKey()) + " " + entry.getValue() + ",";
 		}
 		sql = Utils.replaceStringEnding(sql, ")");
 		return this.execute(sql);
+	}
+	public boolean batch_insert(String table_name, ArrayList<Map<String, String>> fields){
+		String sql = "INSERT INTO " + table_name + " (";
+		String values = " VALUES ";
+		boolean first = true;
+		for (Map<String, String> row_entry : fields){
+			values += "(";
+			for (Entry<String, String> entry : row_entry.entrySet()) {
+				String value = sqlProof(entry.getValue());
+				values += value + ",";
+				if(first){
+					String key = sqlProof(entry.getKey());
+					sql += key + ",";
+				}
+			}
+			values = Utils.replaceStringEnding(values, "");
+			first = false;
+			values += "),";
+		}
+		
+		sql = Utils.replaceStringEnding(sql, ")");
+		values = Utils.replaceStringEnding(values, "");
+		return this.execute(sql + values);
 	}
 	public boolean insert(String table_name, Map<String, String> fields){
 		String sql = "INSERT INTO " + table_name + " (";
 		String values = " VALUES (";
 		for (Entry<String, String> entry : fields.entrySet()) {
-			String key = entry.getKey();
-			String value = entry.getValue();
+			String key = sqlProof(entry.getKey());
+			String value = sqlProof(entry.getValue());
 			sql += key + ",";
-			// WHAT DO YOU MEAN I'VE BEEN DOING THIS FOR YEARS AND JUST DISCOVERED THIS LIBRARY.
-			values += "'"+ StringEscapeUtils.escapeSql(value) + "',";
+			values += value + ",";
 		}
 		sql = Utils.replaceStringEnding(sql, ")");
 		values = Utils.replaceStringEnding(values, ")");
@@ -181,7 +249,7 @@ public class SQL_Driver {
 	public boolean update(String table_name, HashMap<String, String> update_to, String where){
 		String sql = "UPDATE " + table_name + " SET ";
 		for(Entry<String, String> entry : update_to.entrySet() ){
-			sql += entry.getKey() + " = " + entry.getValue() + ",";
+			sql += sqlProof(entry.getKey()) + " = " + sqlProof(entry.getValue()) + ",";
 		}
 		sql = Utils.replaceStringEnding(sql, "");
 		if(!where.contains("='") || !where.contains("= '")){
@@ -206,4 +274,37 @@ public class SQL_Driver {
 		HashMap<String, String> res = this.select_first(table_name, count);
 		return Integer.parseInt(res.get("count(*)"));
 	}
+	public boolean drop(String table_name){
+		String sql = "DROP TABLE IF EXISTS " + table_name;
+		return this.execute(sql);
+	}
+	public boolean drop_all() throws SQLException{
+		this.open();
+		DatabaseMetaData md = this.con.getMetaData(); 
+		ResultSet rs = md.getTables(null,  null, "%", null);
+		ArrayList<String> tables = new ArrayList<String>();
+		while(rs.next()){
+			if(!rs.getString(3).contains("sqlite_sequence")){
+				tables.add(rs.getString(3));
+			}
+		}
+		this.close();
+		
+		for(String table : tables){
+			this.open();
+			if(drop(table)){
+				return false;
+			}
+			this.close();
+		}
+		return true;
+	}
+	public static String sqlProof(String str){
+		str = str.replace("'", "''");
+		str = "'" + str + "'";
+		str = str.replaceAll("/", "\\/");
+		return str;
+		
+	}
+
 }

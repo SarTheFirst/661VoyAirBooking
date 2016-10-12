@@ -4,15 +4,106 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionGroup;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+public class Utils{
+	private static final char DEFAULT_SEPARATOR = ',';
+	private static final char DEFAULT_QUOTE = '"';
 
-public class Utils extends DefaultParser{
+    public static List<String> parseLine(String cvsLine) {
+        return parseLine(cvsLine, DEFAULT_SEPARATOR, DEFAULT_QUOTE);
+    }
+
+    public static List<String> parseLine(String cvsLine, char separators) {
+        return parseLine(cvsLine, separators, DEFAULT_QUOTE);
+    }
+
+
+    @SuppressWarnings("null")
+	public static List<String> parseLine(String cvsLine, char separators, char customQuote) {
+
+        List<String> result = new ArrayList<>();
+
+        //if empty, return!
+        if (cvsLine == null && cvsLine.isEmpty()) {
+            return result;
+        }
+
+        if (customQuote == ' ') {
+            customQuote = DEFAULT_QUOTE;
+        }
+
+        if (separators == ' ') {
+            separators = DEFAULT_SEPARATOR;
+        }
+
+        StringBuffer curVal = new StringBuffer();
+        boolean inQuotes = false;
+        boolean startCollectChar = false;
+        boolean doubleQuotesInColumn = false;
+
+        char[] chars = cvsLine.toCharArray();
+
+        for (char ch : chars) {
+
+            if (inQuotes) {
+                startCollectChar = true;
+                if (ch == customQuote) {
+                    inQuotes = false;
+                    doubleQuotesInColumn = false;
+                } else {
+
+                    //Fixed : allow "" in custom quote enclosed
+                    if (ch == '\"') {
+                        if (!doubleQuotesInColumn) {
+                            curVal.append(ch);
+                            doubleQuotesInColumn = true;
+                        }
+                    } else {
+                        curVal.append(ch);
+                    }
+
+                }
+            } else {
+                if (ch == customQuote) {
+
+                    inQuotes = true;
+
+                    //Fixed : allow "" in empty quote enclosed
+                    if (chars[0] != '"' && customQuote == '\"') {
+                        curVal.append('"');
+                    }
+
+                    //double quotes in column will hit this!
+                    if (startCollectChar) {
+                        curVal.append('"');
+                    }
+
+                } else if (ch == separators) {
+
+                    result.add(curVal.toString());
+
+                    curVal = new StringBuffer();
+                    startCollectChar = false;
+
+                } else if (ch == '\r') {
+                    //ignore LF characters
+                    continue;
+                } else if (ch == '\n') {
+                    //the end, break!
+                    break;
+                } else {
+                    curVal.append(ch);
+                }
+            }
+
+        }
+
+        result.add(curVal.toString());
+
+        return result;
+    }
 	public static int countLines(String filename) throws IOException {
 	    InputStream is = new BufferedInputStream(new FileInputStream(filename));
 	    try {
@@ -34,34 +125,9 @@ public class Utils extends DefaultParser{
 	    }
 	}
 
-	static CommandLine parseCommandLine(String[] args){
-		DefaultParser parser = new DefaultParser();
-		final Options options = setUpCLIParsing();
-		try {
-			return parser.parse(options, args);
-		} catch (ParseException e) {
-			System.err.println("Parsing failed.  Reason: " + e.getMessage()); 
-			return null;
-		} 
-	}
 	public static String replaceStringEnding(String str, String suffix){
 		return str.substring(0, str.length()-1) + suffix;
 	}
-
-	private static Options setUpCLIParsing() { 
-		Options options = new Options(); 
-		final Option resetOption = Option.builder("r").hasArg() 
-				.desc("Delete the database and start again.").longOpt("Reset").build(); 
-
-		final Option textOnlyOption = Option.builder("s").hasArg() 
-				.desc("Text-only interface.").longOpt("simple").build(); 
-
-		final OptionGroup serverOrCli = new OptionGroup(); 
-		serverOrCli.addOption(resetOption); 
-		serverOrCli.addOption(textOnlyOption); 
-		options.addOptionGroup(serverOrCli); 
-		return options; 
-	} 
 }
 
 
