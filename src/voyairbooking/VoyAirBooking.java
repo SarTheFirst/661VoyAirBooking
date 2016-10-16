@@ -5,37 +5,34 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
 import org.apache.commons.io.FilenameUtils;
-import sql_driver.SQL_Driver;
 
 public class VoyAirBooking {
-	private SQL_Driver sqld;
+	private Utils util;
 	public VoyAirBooking() throws SQLException{
-		this.sqld = new SQL_Driver(true); //debug = false
-
+		this.util = new Utils(true);
 	}
 	public void readInData(File f){
 		try {
 			String tableName = FilenameUtils.getBaseName(f.getName()).toLowerCase();
 			if (tableName.endsWith("s")){
-				tableName = Utils.replaceStringEnding(tableName, "");
+				tableName = this.util.sqld.replaceStringEnding(tableName, "");
 			}
-			boolean created_id = false;
 			Scanner scanner = new Scanner(f);
-			List<String> headers = Utils.parseLine(scanner.nextLine());
+			List<String> headers = this.util.parseLine(scanner.nextLine());
 			HashMap<String, String> fields = new HashMap<String, String>();
 			for(int i = 0; i < headers.size(); i++){
 				String fname = headers.get(i).toLowerCase().replace(" ", "_");
 				if(!fname.endsWith("_id") && i == 0){
 					fields.put(tableName + "_id", "INTEGER PRIMARY KEY AUTOINCREMENT");
-					created_id = true;
-					headers.set(i,tableName + "_id");
+					i = i+1;
+					fields.put(fname, "STRING");
+					headers.set(i, fname);
 				}
 				else if(fname.contains("_id") && i != 0){
 					String[] options = fname.split("_");
@@ -48,23 +45,19 @@ public class VoyAirBooking {
 					headers.set(i, fname);
 				}
 			}
-			this.sqld.create_table(tableName, fields);
+			this.util.sqld.create_table(tableName, fields);
 
-			if(this.sqld.count_rows(tableName) != Utils.countLines(f.toString())){
+			if(this.util.sqld.count_rows(tableName) != this.util.countLines(f.toString())){
 				ArrayList<Map<String, String>> rows = new ArrayList<Map<String, String>>();
 				while(scanner.hasNext()){
 					HashMap<String, String> entries = new HashMap<String, String>();
-					List<String> line = Utils.parseLine(scanner.nextLine());
-					if(created_id){
-						headers.remove(0);
-						created_id = false;
-					}
+					List<String> line = this.util.parseLine(scanner.nextLine());
 					for(int i = 0; i < headers.size(); i++){
 						entries.put(headers.get(i), line.get(i));
 					}
 					rows.add(entries);
 				}
-				this.sqld.batch_insert(tableName, rows);
+				this.util.sqld.batch_insert(tableName, rows);
 
 			}
 			scanner.close();
@@ -96,7 +89,7 @@ public class VoyAirBooking {
 			vab = new VoyAirBooking();
 			if(arguments.contains("-t") || arguments.contains("--text-only")){
 				if(arguments.contains("-r") || arguments.contains("--reset")){
-					vab.sqld.drop_all();
+					vab.util.sqld.drop_all();
 					vab.read_in_files();
 				}
 				else if(arguments.contains("-h") || arguments.contains("--help")){
@@ -111,15 +104,21 @@ public class VoyAirBooking {
 					System.out.println("Where are you headed? Do you need to see the cities? Y/n");
 					String know_where = scanner.nextLine();
 					if(know_where.equalsIgnoreCase("y") || know_where.equalsIgnoreCase("yes")){
-						ArrayList<String> listOfCities = vab.sqld.select("airport", "city");
-						Collections.sort(listOfCities, String.CASE_INSENSITIVE_ORDER);
-						for(String city :listOfCities){
+						for(String city : vab.util.get_cities()){
 							System.out.println(city);
 						}
 						System.out.println("\nWhere are you headed?");
 					}
-					String going_to = scanner.nextLine();
-					ArrayList<HashMap<String, String>> res = vab.sqld.select("airport", "*", "city="+going_to);
+					String going_to = scanner.nextLine().trim();
+					ArrayList<HashMap<String, String>> res = vab.util.sqld.select("airport", "*", "city="+going_to);
+					String airport_ids = "";
+					ArrayList<String> aids = new ArrayList<String>();
+					for(HashMap<String, String> row : res){
+						aids.add("destination_airport_id=" + row.get("airport_id"));
+					}
+					airport_ids += String.join(" OR ", aids);
+					res = vab.util.sqld.select("route", "*", airport_ids);
+					System.out.println("There are " + res.size() + " routes for you to choose!");
 					scanner.close();
 				}
 			}

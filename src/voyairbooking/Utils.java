@@ -4,24 +4,46 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import sql_driver.SQL_Driver;
+
 public class Utils{
+	SQL_Driver sqld;
 	private static final char DEFAULT_SEPARATOR = ',';
 	private static final char DEFAULT_QUOTE = '"';
 
-    public static List<String> parseLine(String cvsLine) {
+	public Utils(boolean debug) throws SQLException{
+		this.sqld = new SQL_Driver(debug); //debug = false
+	}
+	
+	public ArrayList<String> get_cities(){
+		ArrayList<String> listOfCities;
+		try {
+			listOfCities = this.sqld.select("airport", "city");
+			Collections.sort(listOfCities, String.CASE_INSENSITIVE_ORDER);
+			return listOfCities;
+
+		} catch (SQLException e) {
+			return null;
+		}
+	}
+
+	
+    public List<String> parseLine(String cvsLine) {
         return parseLine(cvsLine, DEFAULT_SEPARATOR, DEFAULT_QUOTE);
     }
 
-    public static List<String> parseLine(String cvsLine, char separators) {
+    public List<String> parseLine(String cvsLine, char separators) {
         return parseLine(cvsLine, separators, DEFAULT_QUOTE);
     }
 
 
     @SuppressWarnings("null")
-	public static List<String> parseLine(String cvsLine, char separators, char customQuote) {
+	public List<String> parseLine(String cvsLine, char separators, char customQuote) {
 
         List<String> result = new ArrayList<>();
 
@@ -104,7 +126,7 @@ public class Utils{
 
         return result;
     }
-	public static int countLines(String filename) throws IOException {
+	public int countLines(String filename) throws IOException {
 	    InputStream is = new BufferedInputStream(new FileInputStream(filename));
 	    try {
 	        byte[] c = new byte[1024];
@@ -123,10 +145,6 @@ public class Utils{
 	    } finally {
 	        is.close();
 	    }
-	}
-
-	public static String replaceStringEnding(String str, String suffix){
-		return str.substring(0, str.length()-1) + suffix;
 	}
 }
 

@@ -14,8 +14,6 @@ import java.util.Map.Entry;
 
 import org.sqlite.util.StringUtils;
 
-import voyairbooking.Utils;
-
 public class SQL_Driver {
 	private HashMap<String, ArrayList<String>> schema = new HashMap<String, ArrayList<String>>();
 	private String db_name;
@@ -92,14 +90,14 @@ public class SQL_Driver {
 	}
 	@SuppressWarnings("serial")
 	public ArrayList<String> select(String table_name, String select) throws SQLException{
-		 ArrayList<HashMap<String, String>> res = select(table_name, new ArrayList<String>() {{ add(select);}});
-		 ArrayList<String> results = new ArrayList<String>();
-		 for(HashMap<String, String> row : res){
-			 results.add(row.get(select));
-		 }
-		 return results;
+		ArrayList<HashMap<String, String>> res = select(table_name, new ArrayList<String>() {{ add(select);}});
+		ArrayList<String> results = new ArrayList<String>();
+		for(HashMap<String, String> row : res){
+			results.add(row.get(select));
+		}
+		return results;
 	}
-	
+
 	public ArrayList<HashMap<String, String>> select(String table_name, ArrayList<String> select) throws SQLException{
 		return select(table_name, select, "");
 	}
@@ -116,7 +114,7 @@ public class SQL_Driver {
 
 		String sql = "Select " +  StringUtils.join(select, ",") + " FROM " + table_name;
 		if(!where.isEmpty()){
-			sql += " WHERE " + where;
+			sql += " WHERE " + fixWhere(where);
 		}
 		if(!other.isEmpty()){
 			sql += other;
@@ -154,12 +152,7 @@ public class SQL_Driver {
 		}
 		String sql = "Select " +  sel + " FROM " + table_name + " ";
 		if(!where.isEmpty()){
-			String newWhere = "WHERE '";
-			for(String splits : where.split(",")){
-				String[] res = splits.split("=");
-				newWhere += res[0].trim().replace("'", "") + "'== '" + res[2].trim().replace("'", "") + "'";
-			}
-			sql += newWhere;
+			sql += " WHERE " + fixWhere(where);
 		}
 		sql += " LIMIT 1 ";
 		if(!other.isEmpty()){
@@ -202,7 +195,7 @@ public class SQL_Driver {
 		for (Map.Entry<String, String> entry : fields.entrySet()){
 			sql += sqlProof(entry.getKey()) + " " + entry.getValue() + ",";
 		}
-		sql = Utils.replaceStringEnding(sql, ")");
+		sql = replaceStringEnding(sql, ")");
 		return this.execute(sql);
 	}
 	public boolean batch_insert(String table_name, ArrayList<Map<String, String>> fields){
@@ -219,13 +212,13 @@ public class SQL_Driver {
 					sql += key + ",";
 				}
 			}
-			values = Utils.replaceStringEnding(values, "");
+			values = replaceStringEnding(values, "");
 			first = false;
 			values += "),";
 		}
-		
-		sql = Utils.replaceStringEnding(sql, ")");
-		values = Utils.replaceStringEnding(values, "");
+
+		sql = replaceStringEnding(sql, ")");
+		values = replaceStringEnding(values, "");
 		return this.execute(sql + values);
 	}
 	public boolean insert(String table_name, Map<String, String> fields){
@@ -237,8 +230,8 @@ public class SQL_Driver {
 			sql += key + ",";
 			values += value + ",";
 		}
-		sql = Utils.replaceStringEnding(sql, ")");
-		values = Utils.replaceStringEnding(values, ")");
+		sql = replaceStringEnding(sql, ")");
+		values = replaceStringEnding(values, ")");
 		return this.execute(sql + values);
 	}
 
@@ -251,7 +244,7 @@ public class SQL_Driver {
 		for(Entry<String, String> entry : update_to.entrySet() ){
 			sql += sqlProof(entry.getKey()) + " = " + sqlProof(entry.getValue()) + ",";
 		}
-		sql = Utils.replaceStringEnding(sql, "");
+		sql = replaceStringEnding(sql, "");
 		if(!where.contains("='") || !where.contains("= '")){
 			String newWhere = "";
 			for(String splits : where.split(",")){
@@ -289,7 +282,7 @@ public class SQL_Driver {
 			}
 		}
 		this.close();
-		
+
 		for(String table : tables){
 			this.open();
 			if(drop(table)){
@@ -299,12 +292,34 @@ public class SQL_Driver {
 		}
 		return true;
 	}
+	public String fixWhere(String where){
+		String[] res = where.split(" ");
+		String newWhere = "";
+		for(String s :res){
+			if(s.contains("=") && !( s.contains("true") || s.contains("false"))){
+				String[] parts = s.split("=");
+				String newParts = String.join("", parts[0], "=") + "'" + parts[1]+"'";
+				newWhere += newParts;
+			}
+			else if(s.equalsIgnoreCase("AND") || s.equalsIgnoreCase("or")){
+				newWhere += " " + s + " ";
+			}
+			else {
+				newWhere += s;
+			}
+		}
+		return newWhere + " COLLATE NOCASE";
+
+	}
 	public static String sqlProof(String str){
 		str = str.replace("'", "''");
 		str = "'" + str + "'";
 		str = str.replaceAll("/", "\\/");
 		return str;
-		
+
+	}
+	public String replaceStringEnding(String str, String suffix){
+		return str.substring(0, str.length()-1) + suffix;
 	}
 
 }
