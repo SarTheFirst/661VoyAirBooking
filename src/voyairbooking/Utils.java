@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import sql_driver.SQL_Driver;
@@ -21,11 +23,15 @@ public class Utils{
 	}
 	
 	public ArrayList<String> get_cities(){
-		ArrayList<String> listOfCities;
+		HashSet<String> listOfCities = new HashSet<String>();
 		try {
-			listOfCities = this.sqld.select("airport", "city");
-			Collections.sort(listOfCities, String.CASE_INSENSITIVE_ORDER);
-			return listOfCities;
+			ArrayList<HashMap<String, String>> res = this.sqld.select("airport", "city", "", true);
+			for(HashMap<String, String> row : res){
+				listOfCities.add(row.get("city"));
+			}
+			ArrayList<String> toReturn = new ArrayList<String>(listOfCities);
+			Collections.sort(toReturn, String.CASE_INSENSITIVE_ORDER);
+			return toReturn;
 
 		} catch (SQLException e) {
 			return null;

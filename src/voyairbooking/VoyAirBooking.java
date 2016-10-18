@@ -28,13 +28,10 @@ public class VoyAirBooking {
 			HashMap<String, String> fields = new HashMap<String, String>();
 			for(int i = 0; i < headers.size(); i++){
 				String fname = headers.get(i).toLowerCase().replace(" ", "_");
-				if(!fname.endsWith("_id") && i == 0){
+				if(!fname.contains(tableName)){
 					fields.put(tableName + "_id", "INTEGER PRIMARY KEY AUTOINCREMENT");
-					i = i+1;
-					fields.put(fname, "STRING");
-					headers.set(i, fname);
 				}
-				else if(fname.contains("_id") && i != 0){
+				if(fname.contains("_id")){
 					String[] options = fname.split("_");
 					String other_id = options[options.length-2];
 					fields.put(fname, "STRING REFERENCES " + other_id + "(" + other_id + "_id) ON UPDATE CASCADE");
@@ -47,7 +44,7 @@ public class VoyAirBooking {
 			}
 			this.util.sqld.create_table(tableName, fields);
 
-			if(this.util.sqld.count_rows(tableName) != this.util.countLines(f.toString())){
+			if(this.util.sqld.count_rows(tableName)+1 != this.util.countLines(f.toString())){
 				ArrayList<Map<String, String>> rows = new ArrayList<Map<String, String>>();
 				while(scanner.hasNext()){
 					HashMap<String, String> entries = new HashMap<String, String>();
@@ -119,6 +116,13 @@ public class VoyAirBooking {
 					airport_ids += String.join(" OR ", aids);
 					res = vab.util.sqld.select("route", "*", airport_ids);
 					System.out.println("There are " + res.size() + " routes for you to choose!");
+					for(HashMap<String, String> row: res){
+						for (Map.Entry<String, String> entry : row.entrySet())
+						{
+						    System.out.println(entry.getKey() + " : " + entry.getValue());
+						}
+
+					}
 					scanner.close();
 				}
 			}

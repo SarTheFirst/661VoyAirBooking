@@ -1,5 +1,6 @@
 package sql_driver;
 
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -20,6 +21,7 @@ public class SQL_Driver {
 	private Connection con;
 	private Statement stmnt;
 	public Boolean debug;
+	PrintWriter sql_out;
 	public boolean close(){
 		try {
 			this.stmnt.close();
@@ -39,7 +41,6 @@ public class SQL_Driver {
 			System.err.println("Could not connect to database");
 			return false;
 		}
-
 	}
 	public SQL_Driver(String filename, boolean debug) throws SQLException{
 		this.debug = debug;
@@ -55,7 +56,9 @@ public class SQL_Driver {
 		try{
 			if(this.open()){
 				boolean res = this.stmnt.execute(sql);
-				if(this.debug) System.out.println("DEBUG: " + sql);
+				if(this.debug){
+					System.out.println("DEBUG: " + sql);
+				}
 				return res;
 			}
 			else{
@@ -63,6 +66,7 @@ public class SQL_Driver {
 			}
 		} catch (SQLException e) {
 			System.err.println("Failed to execute the SQL query: " + sql);
+			this.sql_out.println("ERROR: " + sql);
 			e.printStackTrace();
 			return false;
 		}
@@ -71,31 +75,19 @@ public class SQL_Driver {
 		try {
 			if(this.open()){
 				ResultSet res = this.stmnt.executeQuery(sql);
-				if(this.debug) System.out.println("DEBUG: " + sql);
+				if(this.debug){
+					System.out.println("DEBUG: " + sql);
+				}
 				return res;
 			}
 			else{
 				return null;
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			System.err.println("Failed to execute the SQL query: " + sql);
 			e.printStackTrace();
 			return null;
 		}
-	}
-	@SuppressWarnings("serial")
-	public ArrayList<HashMap<String, String>> select(String table_name) throws SQLException{
-		return select(table_name, new ArrayList<String>() {{ add("*");}});
-	}
-	@SuppressWarnings("serial")
-	public ArrayList<String> select(String table_name, String select) throws SQLException{
-		ArrayList<HashMap<String, String>> res = select(table_name, new ArrayList<String>() {{ add(select);}});
-		ArrayList<String> results = new ArrayList<String>();
-		for(HashMap<String, String> row : res){
-			results.add(row.get(select));
-		}
-		return results;
 	}
 
 	public ArrayList<HashMap<String, String>> select(String table_name, ArrayList<String> select) throws SQLException{
@@ -105,14 +97,22 @@ public class SQL_Driver {
 	public ArrayList<HashMap<String, String>> select(String table_name, String select, String where) throws SQLException{
 		return select(table_name, new ArrayList<String>() {{ add(select);}}, where);
 	}
-
 	public ArrayList<HashMap<String, String>> select(String table_name, ArrayList<String> select, String where) throws SQLException{
-		return select(table_name, select, where, "");
+		return select(table_name, select, where, "", false);
 	}
-	public ArrayList<HashMap<String, String>> select(String table_name, ArrayList<String> select, String where, String other) throws SQLException{
+	@SuppressWarnings("serial")
+	public ArrayList<HashMap<String, String>> select(String table_name, String select, String where, boolean distinct) throws SQLException{
+		return select(table_name, new ArrayList<String>() {{ add(select);}}, where, "", distinct);
+	}
+
+	public ArrayList<HashMap<String, String>> select(String table_name, ArrayList<String> select, String where, String other, boolean distinct) throws SQLException{
 		ArrayList<HashMap<String, String>> toReturn = new ArrayList<HashMap<String, String>>();
 
-		String sql = "Select " +  StringUtils.join(select, ",") + " FROM " + table_name;
+		String sql = "SELECT ";
+		if(distinct){
+			sql += "DISTINCT ";
+		}
+		sql += StringUtils.join(select, ",") + " FROM " + sqlProof(table_name);
 		if(!where.isEmpty()){
 			sql += " WHERE " + fixWhere(where);
 		}
@@ -150,7 +150,7 @@ public class SQL_Driver {
 		if(!sel.contains("count(*)")){
 			sel = "'" + sqlProof(sel) + "'";
 		}
-		String sql = "Select " +  sel + " FROM " + table_name + " ";
+		String sql = "Select " +  sel + " FROM " + sqlProof(table_name) + " ";
 		if(!where.isEmpty()){
 			sql += " WHERE " + fixWhere(where);
 		}
@@ -191,7 +191,7 @@ public class SQL_Driver {
 		return null;
 	}
 	public boolean create_table(String table_name, HashMap<String, String> fields){
-		String sql = "CREATE TABLE IF NOT EXISTS " + table_name + " (";
+		String sql = "CREATE TABLE IF NOT EXISTS " + sqlProof(table_name) + " (";
 		for (Map.Entry<String, String> entry : fields.entrySet()){
 			sql += sqlProof(entry.getKey()) + " " + entry.getValue() + ",";
 		}
@@ -199,7 +199,7 @@ public class SQL_Driver {
 		return this.execute(sql);
 	}
 	public boolean batch_insert(String table_name, ArrayList<Map<String, String>> fields){
-		String sql = "INSERT INTO " + table_name + " (";
+		String sql = "INSERT INTO " + sqlProof(table_name) + " (";
 		String values = " VALUES ";
 		boolean first = true;
 		for (Map<String, String> row_entry : fields){
@@ -222,7 +222,7 @@ public class SQL_Driver {
 		return this.execute(sql + values);
 	}
 	public boolean insert(String table_name, Map<String, String> fields){
-		String sql = "INSERT INTO " + table_name + " (";
+		String sql = "INSERT INTO " + sqlProof(table_name) + " (";
 		String values = " VALUES (";
 		for (Entry<String, String> entry : fields.entrySet()) {
 			String key = sqlProof(entry.getKey());
@@ -236,11 +236,11 @@ public class SQL_Driver {
 	}
 
 	public boolean delete(String table_name, String where){
-		String sql = "DELETE FROM " + table_name + " WHERE " + where;
+		String sql = "DELETE FROM " + sqlProof(table_name) + " WHERE " + where;
 		return this.execute(sql);
 	}
 	public boolean update(String table_name, HashMap<String, String> update_to, String where){
-		String sql = "UPDATE " + table_name + " SET ";
+		String sql = "UPDATE " + sqlProof(table_name) + " SET ";
 		for(Entry<String, String> entry : update_to.entrySet() ){
 			sql += sqlProof(entry.getKey()) + " = " + sqlProof(entry.getValue()) + ",";
 		}
@@ -258,7 +258,7 @@ public class SQL_Driver {
 	}
 	public boolean truncate(String table_name){
 		// Vaccum is memory clean up or something since sqlite doesn't have a truncate.
-		String sql = "DELETE FROM " + table_name + "; VACUUM"; 
+		String sql = "DELETE FROM " + sqlProof(table_name) + "; VACUUM"; 
 		return this.execute(sql);
 	}
 	public int count_rows(String table_name) throws SQLException{
@@ -268,7 +268,7 @@ public class SQL_Driver {
 		return Integer.parseInt(res.get("count(*)"));
 	}
 	public boolean drop(String table_name){
-		String sql = "DROP TABLE IF EXISTS " + table_name;
+		String sql = "DROP TABLE IF EXISTS " + sqlProof(table_name);
 		return this.execute(sql);
 	}
 	public boolean drop_all() throws SQLException{
