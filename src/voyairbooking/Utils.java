@@ -11,33 +11,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-import sql_driver.SQL_Driver;
-
 public class Utils{
-	SQL_Driver sqld;
 	private static final char DEFAULT_SEPARATOR = ',';
 	private static final char DEFAULT_QUOTE = '"';
-
-	public Utils(boolean debug) throws SQLException{
-		this.sqld = new SQL_Driver(debug); //debug = false
-	}
-	
-	public ArrayList<String> get_cities(){
-		HashSet<String> listOfCities = new HashSet<String>();
-		try {
-			ArrayList<HashMap<String, String>> res = this.sqld.select("airport", "city", "", true);
-			for(HashMap<String, String> row : res){
-				listOfCities.add(row.get("city"));
-			}
-			ArrayList<String> toReturn = new ArrayList<String>(listOfCities);
-			Collections.sort(toReturn, String.CASE_INSENSITIVE_ORDER);
-			return toReturn;
-
-		} catch (SQLException e) {
-			return null;
-		}
-	}
-
 	
     public List<String> parseLine(String cvsLine) {
         return parseLine(cvsLine, DEFAULT_SEPARATOR, DEFAULT_QUOTE);

@@ -13,15 +13,17 @@ import java.util.Scanner;
 import org.apache.commons.io.FilenameUtils;
 
 public class VoyAirBooking {
-	private Utils util;
-	public VoyAirBooking() throws SQLException{
-		this.util = new Utils(true);
-	}
+	public VoyAirTools vabTools;
+	public Utils util;
+	public VoyAirBooking(){
+            this.vabTools = new VoyAirTools(true);
+            this.util = new Utils();
+        }
 	public void readInData(File f){
 		try {
 			String tableName = FilenameUtils.getBaseName(f.getName()).toLowerCase();
 			if (tableName.endsWith("s")){
-				tableName = this.util.sqld.replaceStringEnding(tableName, "");
+				tableName = this.vabTools.sqld.replaceStringEnding(tableName, "");
 			}
 			Scanner scanner = new Scanner(f);
 			List<String> headers = this.util.parseLine(scanner.nextLine());
@@ -42,9 +44,9 @@ public class VoyAirBooking {
 					headers.set(i, fname);
 				}
 			}
-			this.util.sqld.create_table(tableName, fields);
+			this.vabTools.sqld.create_table(tableName, fields);
 
-			if(this.util.sqld.count_rows(tableName)+1 != this.util.countLines(f.toString())){
+			if(this.vabTools.sqld.count_rows(tableName)+1 != this.util.countLines(f.toString())){
 				ArrayList<Map<String, String>> rows = new ArrayList<Map<String, String>>();
 				while(scanner.hasNext()){
 					HashMap<String, String> entries = new HashMap<String, String>();
@@ -54,7 +56,7 @@ public class VoyAirBooking {
 					}
 					rows.add(entries);
 				}
-				this.util.sqld.batch_insert(tableName, rows);
+				this.vabTools.sqld.batch_insert(tableName, rows);
 
 			}
 			scanner.close();
@@ -86,7 +88,7 @@ public class VoyAirBooking {
 			vab = new VoyAirBooking();
 			if(arguments.contains("-t") || arguments.contains("--text-only")){
 				if(arguments.contains("-r") || arguments.contains("--reset")){
-					vab.util.sqld.drop_all();
+					vab.vabTools.sqld.drop_all();
 					vab.read_in_files();
 				}
 				else if(arguments.contains("-h") || arguments.contains("--help")){
@@ -101,20 +103,20 @@ public class VoyAirBooking {
 					System.out.println("Where are you headed? Do you need to see the cities? Y/n");
 					String know_where = scanner.nextLine();
 					if(know_where.equalsIgnoreCase("y") || know_where.equalsIgnoreCase("yes")){
-						for(String city : vab.util.get_cities()){
+						for(String city : vab.vabTools.get_cities()){
 							System.out.println(city);
 						}
 						System.out.println("\nWhere are you headed?");
 					}
 					String going_to = scanner.nextLine().trim();
-					ArrayList<HashMap<String, String>> res = vab.util.sqld.select("airport", "*", "city="+going_to);
+					ArrayList<HashMap<String, String>> res = vab.vabTools.sqld.select("airport", "*", "city="+going_to);
 					String airport_ids = "";
 					ArrayList<String> aids = new ArrayList<String>();
 					for(HashMap<String, String> row : res){
 						aids.add("destination_airport_id=" + row.get("airport_id"));
 					}
 					airport_ids += String.join(" OR ", aids);
-					res = vab.util.sqld.select("route", "*", airport_ids);
+					res = vab.vabTools.sqld.select("route", "*", airport_ids);
 					System.out.println("There are " + res.size() + " routes for you to choose!");
 					for(HashMap<String, String> row: res){
 						for (Map.Entry<String, String> entry : row.entrySet())

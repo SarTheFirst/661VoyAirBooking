@@ -5,16 +5,27 @@
  */
 package voyairbooking;
 
+import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.Date;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerDateModel;
+
 /**
  *
  * @author Shaun
  */
 public class GUI extends javax.swing.JFrame {
 
+    VoyAirBooking vab;
+
     /**
      * Creates new form GUI
      */
     public GUI() {
+        this.vab = new VoyAirBooking();
         initComponents();
     }
 
@@ -27,47 +38,116 @@ public class GUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jMenu3 = new javax.swing.JMenu();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        departingCityList = new javax.swing.JComboBox<>();
+        deptartingCityText = new javax.swing.JLabel();
+        ArrivalCItyText = new javax.swing.JLabel();
+        destinationCityList = new javax.swing.JComboBox<>();
+        arrivalTime = new JSpinner( new SpinnerDateModel() )
+        ;
+        departureTimeText = new javax.swing.JLabel();
+        departTime = new JSpinner( new SpinnerDateModel() )
+        ;
+        arrivalTimeText = new javax.swing.JLabel();
+        findFlightButton = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
         jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
-        jMenuItem2 = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
-        jMenuItem3 = new javax.swing.JMenuItem();
-        jMenuItem4 = new javax.swing.JMenuItem();
-        jMenuItem5 = new javax.swing.JMenuItem();
-
-        jMenu3.setText("jMenu3");
+        fileDropdown = new javax.swing.JMenu();
+        importDataMenuOption = new javax.swing.JMenuItem();
+        exitOption = new javax.swing.JMenuItem();
+        aboutDropdown = new javax.swing.JMenu();
+        versionInfo = new javax.swing.JMenuItem();
+        versionMenuOption = new javax.swing.JMenuItem();
+        aboutMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jMenu1.setText("File");
-
-        jMenuItem1.setText("Import Data");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem1ActionPerformed(evt);
+        DefaultComboBoxModel model = new DefaultComboBoxModel();
+        departingCityList.setModel(model);
+        departingCityList.addAncestorListener(new javax.swing.event.AncestorListener() {
+            public void ancestorAdded(javax.swing.event.AncestorEvent evt) {
+                departingCityListAncestorAdded(evt);
+            }
+            public void ancestorRemoved(javax.swing.event.AncestorEvent evt) {
+            }
+            public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
             }
         });
-        jMenu1.add(jMenuItem1);
 
-        jMenuItem2.setText("Exit");
-        jMenu1.add(jMenuItem2);
+        deptartingCityText.setText("Departing City");
 
-        jMenuBar1.add(jMenu1);
+        ArrivalCItyText.setText("Arrival City");
 
-        jMenu2.setText("About");
+        destinationCityList.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        destinationCityList.addAncestorListener(new javax.swing.event.AncestorListener() {
+            public void ancestorAdded(javax.swing.event.AncestorEvent evt) {
+                destinationCityListAncestorAdded(evt);
+            }
+            public void ancestorRemoved(javax.swing.event.AncestorEvent evt) {
+            }
+            public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
+            }
+        });
 
-        jMenuItem3.setText("Help");
-        jMenu2.add(jMenuItem3);
+        arrivalTime.setEditor(new JSpinner.DateEditor(arrivalTime, "HH:mm:ss"));
+        arrivalTime.setValue(new Date());
 
-        jMenuItem4.setText("Version Info");
-        jMenu2.add(jMenuItem4);
+        departureTimeText.setText("<html>When do you<br>want to leave?</html");
 
-        jMenuItem5.setText("About");
-        jMenu2.add(jMenuItem5);
+        departTime.setEditor(new JSpinner.DateEditor(departTime, "HH:mm:ss"));
+        departTime.setValue(new Date());
 
-        jMenuBar1.add(jMenu2);
+        arrivalTimeText.setText("<html>When do you<br>want to arrive?</html");
+
+        findFlightButton.setText("Find My Flight!");
+        findFlightButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                findFlightButtonActionPerformed(evt);
+            }
+        });
+
+        jTextArea1.setColumns(20);
+        jTextArea1.setRows(5);
+        jScrollPane1.setViewportView(jTextArea1);
+
+        fileDropdown.setText("File");
+
+        importDataMenuOption.setText("Import Data");
+        importDataMenuOption.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                importDataMenuOptionActionPerformed(evt);
+            }
+        });
+        fileDropdown.add(importDataMenuOption);
+
+        exitOption.setText("Exit");
+        exitOption.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exitOptionActionPerformed(evt);
+            }
+        });
+        fileDropdown.add(exitOption);
+
+        jMenuBar1.add(fileDropdown);
+
+        aboutDropdown.setText("About");
+
+        versionInfo.setText("Help");
+        aboutDropdown.add(versionInfo);
+
+        versionMenuOption.setText("Version Info");
+        versionMenuOption.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                versionMenuOptionActionPerformed(evt);
+            }
+        });
+        aboutDropdown.add(versionMenuOption);
+
+        aboutMenuItem.setText("About");
+        aboutDropdown.add(aboutMenuItem);
+
+        jMenuBar1.add(aboutDropdown);
 
         setJMenuBar(jMenuBar1);
 
@@ -75,19 +155,98 @@ public class GUI extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(findFlightButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(deptartingCityText)
+                            .addComponent(departureTimeText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(departingCityList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(departTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 62, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(arrivalTimeText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(arrivalTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(ArrivalCItyText)
+                                .addGap(18, 18, 18)
+                                .addComponent(destinationCityList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 279, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(11, 11, 11)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(arrivalTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(departingCityList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(deptartingCityText)
+                            .addComponent(ArrivalCItyText)
+                            .addComponent(destinationCityList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(departureTimeText, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(departTime, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(arrivalTimeText, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(findFlightButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+    private void importDataMenuOptionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importDataMenuOptionActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jMenuItem1ActionPerformed
+    }//GEN-LAST:event_importDataMenuOptionActionPerformed
+
+    private void exitOptionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitOptionActionPerformed
+        System.exit(0);        // TODO add your handling code here:
+    }//GEN-LAST:event_exitOptionActionPerformed
+
+    private void departingCityListAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_departingCityListAncestorAdded
+        addCities(departingCityList);
+    }//GEN-LAST:event_departingCityListAncestorAdded
+
+    private void destinationCityListAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_destinationCityListAncestorAdded
+        addCities(destinationCityList);
+    }//GEN-LAST:event_destinationCityListAncestorAdded
+
+    private void versionMenuOptionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_versionMenuOptionActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_versionMenuOptionActionPerformed
+
+    private void findFlightButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findFlightButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_findFlightButtonActionPerformed
+
+    private void addCities(JComboBox<String> dropdown) {
+        DefaultComboBoxModel model = new DefaultComboBoxModel();
+        dropdown.setModel(model);
+        int maxSize = -1;
+        ArrayList<String> cities = this.vab.vabTools.get_cities();
+        for (String s : cities) {
+            if (s.length() > maxSize) {
+                maxSize = s.length();
+            }
+            model.addElement(s);
+        }
+        Dimension d = this.getSize();
+        d.width += maxSize + 150; // [massive shrug of guestimation how this works]
+        this.setSize(d);
+    }
 
     /**
      * @param args the command line arguments
@@ -98,6 +257,7 @@ public class GUI extends javax.swing.JFrame {
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
+        VoyAirBooking vab;
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -125,14 +285,29 @@ public class GUI extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenu jMenu3;
+    private javax.swing.JLabel ArrivalCItyText;
+    private javax.swing.JMenu aboutDropdown;
+    private javax.swing.JMenuItem aboutMenuItem;
+    private javax.swing.JSpinner arrivalTime;
+    private javax.swing.JLabel arrivalTimeText;
+    private javax.swing.JSpinner departTime;
+    private javax.swing.JComboBox<String> departingCityList;
+    private javax.swing.JLabel departureTimeText;
+    private javax.swing.JLabel deptartingCityText;
+    private javax.swing.JComboBox<String> destinationCityList;
+    private javax.swing.JMenuItem exitOption;
+    private javax.swing.JMenu fileDropdown;
+    private javax.swing.JButton findFlightButton;
+    private javax.swing.JMenuItem importDataMenuOption;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem2;
-    private javax.swing.JMenuItem jMenuItem3;
-    private javax.swing.JMenuItem jMenuItem4;
-    private javax.swing.JMenuItem jMenuItem5;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JMenuItem versionInfo;
+    private javax.swing.JMenuItem versionMenuOption;
     // End of variables declaration//GEN-END:variables
+
+    private void initComponents(VoyAirBooking vab) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }
