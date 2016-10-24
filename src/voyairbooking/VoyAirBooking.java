@@ -99,25 +99,8 @@ public class VoyAirBooking {
 					System.out.println("-h [--help] displays this help text.");
 				}
 				else{
-					Scanner scanner = new Scanner(System.in);
-					System.out.println("Where are you headed? Do you need to see the cities? Y/n");
-					String know_where = scanner.nextLine();
-					if(know_where.equalsIgnoreCase("y") || know_where.equalsIgnoreCase("yes")){
-						for(String city : vab.vabTools.get_cities()){
-							System.out.println(city);
-						}
-						System.out.println("\nWhere are you headed?");
-					}
-					String going_to = scanner.nextLine().trim();
-					ArrayList<HashMap<String, String>> res = vab.vabTools.sqld.select("airport", "*", "city="+going_to);
-					String airport_ids = "";
-					ArrayList<String> aids = new ArrayList<String>();
-					for(HashMap<String, String> row : res){
-						aids.add("destination_airport_id=" + row.get("airport_id"));
-					}
-					airport_ids += String.join(" OR ", aids);
-					res = vab.vabTools.sqld.select("route", "*", airport_ids);
-					System.out.println("There are " + res.size() + " routes for you to choose!");
+					System.out.println("Going from Moscow to Athens");
+					ArrayList<HashMap<String, String>> res = vab.vabTools.get_routes("Moscow", "Athens");
 					for(HashMap<String, String> row: res){
 						for (Map.Entry<String, String> entry : row.entrySet())
 						{
@@ -125,7 +108,6 @@ public class VoyAirBooking {
 						}
 
 					}
-					scanner.close();
 				}
 			}
 			else{

@@ -305,7 +305,7 @@ public class SQL_Driver {
 				newWhere += " " + s + " ";
 			}
 			else {
-				newWhere += s;
+				newWhere += s + " ";
 			}
 		}
 		return newWhere + " COLLATE NOCASE";

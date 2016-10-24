@@ -4,11 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 public class Utils{
@@ -16,16 +12,16 @@ public class Utils{
 	private static final char DEFAULT_QUOTE = '"';
 	
     public List<String> parseLine(String cvsLine) {
-        return parseLine(cvsLine, DEFAULT_SEPARATOR, DEFAULT_QUOTE);
+        return parseCSVLine(cvsLine, DEFAULT_SEPARATOR, DEFAULT_QUOTE);
     }
 
     public List<String> parseLine(String cvsLine, char separators) {
-        return parseLine(cvsLine, separators, DEFAULT_QUOTE);
+        return parseCSVLine(cvsLine, separators, DEFAULT_QUOTE);
     }
 
 
     @SuppressWarnings("null")
-	public List<String> parseLine(String cvsLine, char separators, char customQuote) {
+	public List<String> parseCSVLine(String cvsLine, char separators, char customQuote) {
 
         List<String> result = new ArrayList<>();
 
