@@ -18,7 +18,7 @@ public class VoyAirBooking {
 	public VoyAirBooking(){
             this.vabTools = new VoyAirTools(true);
             this.util = new Utils();
-        }
+    }
 	public void readInData(File f){
 		try {
 			String tableName = FilenameUtils.getBaseName(f.getName()).toLowerCase();

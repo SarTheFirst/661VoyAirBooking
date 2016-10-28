@@ -138,6 +138,10 @@ public class SQL_Driver {
 	public HashMap<String, String> select_first(String table_name) throws SQLException{
 		return select_first(table_name, new ArrayList<String>() {{ add("*"); }});
 	}
+	@SuppressWarnings("serial")
+	public HashMap<String, String> select_first(String table_name, String select, String where) throws SQLException{
+		return select_first(table_name, new ArrayList<String>() {{ add(select);}}, where);
+	}
 	public HashMap<String, String> select_first(String table_name, ArrayList<String> select) throws SQLException{
 		return select_first(table_name, select, "");
 	}

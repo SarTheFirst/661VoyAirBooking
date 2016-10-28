@@ -5,18 +5,24 @@
  */
 package voyairbooking;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+
 import sql_driver.SQL_Driver;
 
 public class VoyAirTools {
+	private String user_id;
 	protected SQL_Driver sqld;
 	public VoyAirTools(boolean debugMode){
 		try {
 			this.sqld = new SQL_Driver(debugMode);
+			this.setUser_id("-1");
 		} catch (SQLException ex) {
 			System.err.println("Failed to initate VoyAirBooking. Please try again later.");
 		}
@@ -48,7 +54,6 @@ public class VoyAirTools {
 		try {
 			ArrayList<String> end_id = get_field(this.sqld.select("airport", "*", "city="+end_city), "airport_id");
 			ArrayList<String> start_id = get_field(this.sqld.select("airport", "*", "city="+start_city), "airport_id");
-
 			String end_ids = surround_parens(String.join(", ",end_id));
 			String start_ids = surround_parens(String.join(", ", start_id));
 			return this.sqld.select("route", "*", "takeoff_airport_id IN " + start_ids + " AND destination_airport_id IN " + end_ids);
@@ -58,5 +63,56 @@ public class VoyAirTools {
 	}
 	public boolean save_route(String route_id, String user_id){
 		return false;
+	}
+
+	public void register(String username, String password){
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-256");
+			Map<String, String> toInsert = new HashMap<String, String>();
+			toInsert.put("username", username);
+			toInsert.put("password", md.digest(password.getBytes()).toString());
+			if(this.sqld.insert("account", toInsert)){
+				System.out.println("Failed to register account.");
+			}
+			else{
+				System.out.println("Account registration was successful!");
+			}
+		} catch (NoSuchAlgorithmException e) {
+			System.err.println("No Such Algorithm");
+		}
+
+	}
+	public boolean tryLoggingIn(String username, String password){
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-256");
+			HashMap<String, String> res = this.sqld.select_first("accounts", "*", "username=" + username);
+			if(res.isEmpty()){
+				System.out.println("No user by the username " + username + ".");
+				System.out.println("");
+				return false;
+			}
+			if(res.get("password").equals(md.digest(password.getBytes()))){
+				System.out.println("Welcome back, " + username + "!");
+				this.setUser_id(res.get("account_id"));
+				return true;
+			}
+			else{
+				System.out.println("Inccorrect password");
+				return false;
+			}
+
+		} catch (NoSuchAlgorithmException e) {
+			System.err.println("No Such Algorithm");
+			return false;
+		} catch (SQLException e) {
+			System.err.println("SQL Error");
+			return false;
+		}
+	}
+	public boolean is_logged_in() {
+		return user_id.equalsIgnoreCase("-1");
+	}
+	public void setUser_id(String user_id) {
+		this.user_id = user_id;
 	}
 }
