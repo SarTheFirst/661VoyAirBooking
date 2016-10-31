@@ -1,7 +1,7 @@
 import csv, pdb, copy
 from random import randrange, randint
 import time
-from dateutil.relativedelta import relativedelta
+import random
 from datetime import timedelta, datetime
 def random_date(start, end):
 	delta = end - start
@@ -15,14 +15,10 @@ with open("data/routes.dat", "r") as in_file:
 		reader = csv.reader(in_file)
 		all = []
 		headers = next(reader)
-		headers += ["time", "date"]
+		price_index = headers.index("price")
 		all.append(headers)
-		datecounter = 0
 
 		for row in reader:
-			for i in range(5):
-				org_row = copy.deepcopy(row)
-				randomdate = random_date(datetime.now(), datetime.now()+ relativedelta(years=1, seconds=randint(10,40)))
-				org_row += [randomdate.time().strftime("%H:%M"), randomdate.date()]
-				all.append(org_row)
+			row[price_index] = round(random.uniform(200, 1500.00), 2)
+			all.append(row)
 		writer.writerows(all)

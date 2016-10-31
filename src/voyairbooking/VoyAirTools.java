@@ -62,7 +62,10 @@ public class VoyAirTools {
 		}
 	}
 	public boolean save_route(String route_id, String user_id){
-		return false;
+		HashMap<String, String> fields = new HashMap<String, String>();
+		fields.put("route_id",  route_id);
+		fields.put("account_id", user_id);
+		return this.sqld.insert("transaction", fields);
 	}
 
 	public void register(String username, String password){
