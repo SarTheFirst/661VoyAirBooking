@@ -79,11 +79,21 @@ public class VoyAirTools {
 			}
 			else{
 				System.out.println("Account registration was successful!");
+				try {
+					this.setUser_id(this.sqld.count_rows("account"));
+				
+				} catch (SQLException e) {
+					System.err.println("How the hell did you get here?");
+				}
 			}
 		} catch (NoSuchAlgorithmException e) {
 			System.err.println("No Such Algorithm");
 		}
 
+	}
+	private void setUser_id(Integer aNum) {
+		this.setUser_id(aNum.toString());
+		
 	}
 	public boolean tryLoggingIn(String username, String password){
 		try {
