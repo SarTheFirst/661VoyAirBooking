@@ -61,6 +61,10 @@ public class VoyAirTools {
 			return null;
 		}
 	}
+	public ArrayList<HashMap<String, String>> get_joined_routes(String start_city, String end_city){
+		//Die
+		return null;
+	}
 	public boolean save_route(String route_id, String user_id){
 		HashMap<String, String> fields = new HashMap<String, String>();
 		fields.put("route_id",  route_id);
