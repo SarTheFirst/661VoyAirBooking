@@ -300,8 +300,8 @@ public class SQL_Driver {
 	}
 	public String fixWhere(String where){
 		ArrayList<String> allMatches = new ArrayList<String> (); 
-		String[] res = where.split("=|OR|AND|or|and");
-		Pattern p = Pattern.compile("=|OR|AND|or|and");
+		String[] res = where.split("=|OR|AND|\\bor\\b|\\band\\b");
+		Pattern p = Pattern.compile("=|OR|AND|\\bor\\b|\\band\\b");
 		Matcher m = p.matcher(where);
 		while(m.find()){
 			allMatches.add(m.group());
@@ -311,8 +311,11 @@ public class SQL_Driver {
 		for(int i = 0; i < res.length; i++){
 			if(!newWhere.isEmpty()){
 				newWhere += allMatches.get(counter++);
+				newWhere += "'" + res[i]+"'";
 			}
-			newWhere += "'" + res[i]+"'";
+			else{
+				newWhere += res[i];
+			}
 			if(counter + 1 < allMatches.size()){
 				if(allMatches.get(counter).equals("=")){
 					newWhere += allMatches.get(counter++) + "'" + res[++i].trim() + "' ";

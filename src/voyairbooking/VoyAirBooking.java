@@ -16,9 +16,9 @@ public class VoyAirBooking {
 	public VoyAirTools vabTools;
 	public Utils util;
 	public VoyAirBooking(){
-            this.vabTools = new VoyAirTools(true);
-            this.util = new Utils();
-    }
+		this.vabTools = new VoyAirTools(true);
+		this.util = new Utils();
+	}
 	public void readInData(File f){
 		try {
 			String tableName = FilenameUtils.getBaseName(f.getName()).toLowerCase();
@@ -99,16 +99,21 @@ public class VoyAirBooking {
 					System.out.println("-h [--help] displays this help text.");
 				}
 				else{
-//					87 Kelowna
-//					30 Campbell River
-					System.out.println("Going from Kelowna to Cambell River");
-					ArrayList<HashMap<String, String>> res = vab.vabTools.get_routes("Kelowna", "Cambell River");
-					for(HashMap<String, String> row: res){
-						for (Map.Entry<String, String> entry : row.entrySet())
-						{
-						    System.out.println(entry.getKey() + " : " + entry.getValue());
-						}
+					// 87 Kelowna
+					// 30 Campbell River
+					System.out.println("Going from Kelowna to Campbell River");
+					ArrayList<HashMap<String, String>> res = vab.vabTools.get_routes("Kelowna", "Campbell River");
+					if(res.isEmpty()){
+						System.out.println("No routes for yoU!");
+					}
+					else{
+						for(HashMap<String, String> row: res){
+							for (Map.Entry<String, String> entry : row.entrySet())
+							{
+								System.out.println(entry.getKey() + " : " + entry.getValue());
+							}
 
+						}
 					}
 				}
 			}
