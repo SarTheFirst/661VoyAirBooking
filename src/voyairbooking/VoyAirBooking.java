@@ -99,8 +99,10 @@ public class VoyAirBooking {
 					System.out.println("-h [--help] displays this help text.");
 				}
 				else{
-					System.out.println("Going from Moscow to Athens");
-					ArrayList<HashMap<String, String>> res = vab.vabTools.get_routes("Moscow", "Athens");
+//					87 Kelowna
+//					30 Campbell River
+					System.out.println("Going from Kelowna to Cambell River");
+					ArrayList<HashMap<String, String>> res = vab.vabTools.get_routes("Kelowna", "Cambell River");
 					for(HashMap<String, String> row: res){
 						for (Map.Entry<String, String> entry : row.entrySet())
 						{

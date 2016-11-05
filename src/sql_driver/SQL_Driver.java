@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.sqlite.util.StringUtils;
 
@@ -297,19 +299,27 @@ public class SQL_Driver {
 		return true;
 	}
 	public String fixWhere(String where){
-		String[] res = where.split(" ");
+		ArrayList<String> allMatches = new ArrayList<String> (); 
+		String[] res = where.split("=|OR|AND|or|and");
+		Pattern p = Pattern.compile("=|OR|AND|or|and");
+		Matcher m = p.matcher(where);
+		while(m.find()){
+			allMatches.add(m.group());
+		}		
 		String newWhere = "";
-		for(String s :res){
-			if(s.contains("=") && !( s.contains("true") || s.contains("false"))){
-				String[] parts = s.split("=");
-				String newParts = String.join("", parts[0], "=") + "'" + parts[1]+"'";
-				newWhere += newParts;
+		int counter = 0;
+		for(int i = 0; i < res.length; i++){
+			if(!newWhere.isEmpty()){
+				newWhere += allMatches.get(counter++);
 			}
-			else if(s.equalsIgnoreCase("AND") || s.equalsIgnoreCase("or")){
-				newWhere += " " + s + " ";
-			}
-			else {
-				newWhere += s + " ";
+			newWhere += "'" + res[i]+"'";
+			if(counter + 1 < allMatches.size()){
+				if(allMatches.get(counter).equals("=")){
+					newWhere += allMatches.get(counter++) + "'" + res[++i].trim() + "' ";
+				}
+				else{
+					newWhere += allMatches.get(counter++);
+				}
 			}
 		}
 		return newWhere + " COLLATE NOCASE";
