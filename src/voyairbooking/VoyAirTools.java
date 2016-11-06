@@ -12,9 +12,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import sql_driver.SQL_Driver;
+import voyairbooking.Graph.Edge;
 
 public class VoyAirTools {
 	private String user_id;
@@ -31,7 +33,7 @@ public class VoyAirTools {
 	public ArrayList<String> get_cities(){
 		try {
 			ArrayList<HashMap<String, String>> res = this.sqld.select("airport", "city", "", true);
-			
+
 			ArrayList<String> toReturn = get_field(res, "city");
 			Collections.sort(toReturn, String.CASE_INSENSITIVE_ORDER);
 			return toReturn;
@@ -62,7 +64,35 @@ public class VoyAirTools {
 		}
 	}
 	public ArrayList<HashMap<String, String>> get_joined_routes(String start_city, String end_city){
-		//Die
+		//Dietakeoff_airport_id
+		try {
+			ArrayList<String> end_id  = get_field(this.sqld.select("airport", "*", "city="+end_city), "airport_id");
+
+			ArrayList<String> start_id = get_field(this.sqld.select("airport", "*", "city="+start_city), "airport_id");
+			String end_ids = surround_parens(String.join(", ",end_id));
+			String start_ids = surround_parens(String.join(", ", start_id));
+			
+			// #ThingsThatAreInsane
+			ArrayList<HashMap<String, String>> all_routes = this.sqld.select_all("route");
+			List<Graph.Edge> graph_list = new ArrayList<Graph.Edge>();
+			for(HashMap<String, String> row : all_routes){
+				graph_list.add(new Edge(row.get("takeoff_airport_id"), row.get("destination_airport_id"), Float.valueOf(row.get("price"))));
+			}
+			Graph.Edge[] route_graph = new Graph.Edge[graph_list.size()];
+		    Graph g = new Graph(graph_list.toArray(route_graph));
+		    for(String start: start_id){
+		    	for(String end: end_id){
+				    g.dijkstra(start);
+				    String path = g.getThePath(end);
+				    System.out.println(path);
+		    	}
+		    }
+		    return new ArrayList<HashMap<String, String>>();
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return null;
 	}
 	public boolean save_route(String route_id, String user_id){
@@ -85,7 +115,7 @@ public class VoyAirTools {
 				System.out.println("Account registration was successful!");
 				try {
 					this.setUser_id(this.sqld.count_rows("account"));
-				
+
 				} catch (SQLException e) {
 					System.err.println("How the hell did you get here?");
 				}
@@ -97,7 +127,7 @@ public class VoyAirTools {
 	}
 	private void setUser_id(Integer aNum) {
 		this.setUser_id(aNum.toString());
-		
+
 	}
 	public boolean tryLoggingIn(String username, String password){
 		try {

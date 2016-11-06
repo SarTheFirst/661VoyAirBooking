@@ -91,7 +91,9 @@ public class SQL_Driver {
 			return null;
 		}
 	}
-
+	public ArrayList<HashMap<String, String>> select_all(String table_name) throws SQLException {
+		return select(table_name, new ArrayList<String>() {{ add("*");}});
+	}
 	public ArrayList<HashMap<String, String>> select(String table_name, ArrayList<String> select) throws SQLException{
 		return select(table_name, select, "");
 	}
@@ -338,5 +340,6 @@ public class SQL_Driver {
 	public String replaceStringEnding(String str, String suffix){
 		return str.substring(0, str.length()-1) + suffix;
 	}
+
 
 }
