@@ -6,20 +6,26 @@
 package voyairbooking;
 
 import java.awt.Dimension;
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Date;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerDateModel;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 
 /**
  *
  * @author Shaun
  */
+@SuppressWarnings("serial")
 public class GUI extends javax.swing.JFrame {
 
     VoyAirBooking vab;
+    Dimension originalSize;
 
     /**
      * Creates new form GUI
@@ -27,6 +33,12 @@ public class GUI extends javax.swing.JFrame {
     public GUI() {
         this.vab = new VoyAirBooking();
         initComponents();
+        this.originalSize = this.getSize();
+        this.originalSize.height -= 125;
+        this.setLocationRelativeTo(null);
+        Point first = this.getLocation();
+        first.x -= 140;
+        this.setLocation(first);
     }
 
     /**
@@ -38,26 +50,110 @@ public class GUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        registerPopUp = new javax.swing.JDialog();
+        regPanel = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        usernameField = new javax.swing.JTextField();
+        passwordField = new javax.swing.JPasswordField();
+        jToggleButton1 = new javax.swing.JToggleButton();
+        jToggleButton2 = new javax.swing.JToggleButton();
+        jLabel1 = new javax.swing.JLabel();
+        aboutPopUp = new javax.swing.JDialog();
         departingCityList = new javax.swing.JComboBox<>();
         deptartingCityText = new javax.swing.JLabel();
         ArrivalCItyText = new javax.swing.JLabel();
         destinationCityList = new javax.swing.JComboBox<>();
-        arrivalTime = new JSpinner( new SpinnerDateModel() )
-        ;
         departureTimeText = new javax.swing.JLabel();
-        departTime = new JSpinner( new SpinnerDateModel() )
-        ;
         arrivalTimeText = new javax.swing.JLabel();
         findFlightButton = new javax.swing.JButton();
         LoginLogout = new javax.swing.JToggleButton();
-        jMenuBar1 = new javax.swing.JMenuBar();
-        fileDropdown = new javax.swing.JMenu();
-        importDataMenuOption = new javax.swing.JMenuItem();
-        exitOption = new javax.swing.JMenuItem();
-        aboutDropdown = new javax.swing.JMenu();
-        versionInfo = new javax.swing.JMenuItem();
-        versionMenuOption = new javax.swing.JMenuItem();
-        aboutMenuItem = new javax.swing.JMenuItem();
+        departureDate = new org.freixas.jcalendar.JCalendarCombo();
+        arrivalDate = new org.freixas.jcalendar.JCalendarCombo();
+        timeSpinnerDeparture = new javax.swing.JSpinner(new SpinnerDateModel());
+        timeSpinnerArrival = new javax.swing.JSpinner(new SpinnerDateModel());
+        exitButton = new javax.swing.JToggleButton();
+        aboutButton = new javax.swing.JToggleButton();
+
+        registerPopUp.setModalityType(java.awt.Dialog.ModalityType.TOOLKIT_MODAL);
+
+        jLabel2.setText("Password");
+
+        jToggleButton1.setText("Close");
+
+        jToggleButton2.setText("Sign In");
+
+        jLabel1.setText("Username");
+
+        javax.swing.GroupLayout regPanelLayout = new javax.swing.GroupLayout(regPanel);
+        regPanel.setLayout(regPanelLayout);
+        regPanelLayout.setHorizontalGroup(
+            regPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(regPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(regPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel2))
+                .addContainerGap())
+            .addGroup(regPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, regPanelLayout.createSequentialGroup()
+                    .addContainerGap(103, Short.MAX_VALUE)
+                    .addComponent(jToggleButton2)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(jToggleButton1)
+                    .addContainerGap())
+                .addGroup(regPanelLayout.createSequentialGroup()
+                    .addGap(95, 95, 95)
+                    .addGroup(regPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(usernameField, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
+                        .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE))))
+        );
+        regPanelLayout.setVerticalGroup(
+            regPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(regPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(47, Short.MAX_VALUE))
+            .addGroup(regPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, regPanelLayout.createSequentialGroup()
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(usernameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(18, 18, 18)
+                    .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(5, 5, 5)
+                    .addGroup(regPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jToggleButton1)
+                        .addComponent(jToggleButton2))
+                    .addContainerGap()))
+        );
+
+        javax.swing.GroupLayout registerPopUpLayout = new javax.swing.GroupLayout(registerPopUp.getContentPane());
+        registerPopUp.getContentPane().setLayout(registerPopUpLayout);
+        registerPopUpLayout.setHorizontalGroup(
+            registerPopUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(registerPopUpLayout.createSequentialGroup()
+                .addGap(4, 4, 4)
+                .addComponent(regPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        registerPopUpLayout.setVerticalGroup(
+            registerPopUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(registerPopUpLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(regPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
+        javax.swing.GroupLayout aboutPopUpLayout = new javax.swing.GroupLayout(aboutPopUp.getContentPane());
+        aboutPopUp.getContentPane().setLayout(aboutPopUpLayout);
+        aboutPopUpLayout.setHorizontalGroup(
+            aboutPopUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 519, Short.MAX_VALUE)
+        );
+        aboutPopUpLayout.setVerticalGroup(
+            aboutPopUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 128, Short.MAX_VALUE)
+        );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -88,13 +184,7 @@ public class GUI extends javax.swing.JFrame {
             }
         });
 
-        arrivalTime.setEditor(new JSpinner.DateEditor(arrivalTime, "HH:mm:ss"));
-        arrivalTime.setValue(new Date());
-
         departureTimeText.setText("<html>When do you<br>want to leave?</html");
-
-        departTime.setEditor(new JSpinner.DateEditor(departTime, "HH:mm:ss"));
-        departTime.setValue(new Date());
 
         arrivalTimeText.setText("<html>When do you<br>want to arrive?</html");
 
@@ -107,134 +197,164 @@ public class GUI extends javax.swing.JFrame {
 
         LoginLogout.setText("Login");
 
-        fileDropdown.setText("File");
+        Date dt = new Date();
+        DateTime dtOrg = new DateTime(dt);
+        arrivalDate.setDate(dtOrg.plusDays(1).toDate());
 
-        importDataMenuOption.setText("Import Data");
-        importDataMenuOption.addActionListener(new java.awt.event.ActionListener() {
+        timeSpinnerDeparture.setEditor(new JSpinner.DateEditor(timeSpinnerDeparture, "HH:mm"));
+        timeSpinnerDeparture.setValue(new Date()); // will only show the current time
+
+        timeSpinnerArrival.setEditor(new JSpinner.DateEditor(timeSpinnerArrival, "HH:mm"));
+        timeSpinnerArrival.setValue(new Date()); // will only show the current time
+
+        exitButton.setBackground(new java.awt.Color(254, 102, 58));
+        exitButton.setText("Exit");
+        exitButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                importDataMenuOptionActionPerformed(evt);
+                exitButtonActionPerformed(evt);
             }
         });
-        fileDropdown.add(importDataMenuOption);
 
-        exitOption.setText("Exit");
-        exitOption.addActionListener(new java.awt.event.ActionListener() {
+        aboutButton.setText("About");
+        aboutButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exitOptionActionPerformed(evt);
+                aboutButtonActionPerformed(evt);
             }
         });
-        fileDropdown.add(exitOption);
-
-        jMenuBar1.add(fileDropdown);
-
-        aboutDropdown.setText("About");
-
-        versionInfo.setText("Help");
-        aboutDropdown.add(versionInfo);
-
-        versionMenuOption.setText("Version Info");
-        versionMenuOption.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                versionMenuOptionActionPerformed(evt);
-            }
-        });
-        aboutDropdown.add(versionMenuOption);
-
-        aboutMenuItem.setText("About");
-        aboutDropdown.add(aboutMenuItem);
-
-        jMenuBar1.add(aboutDropdown);
-
-        setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(findFlightButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(deptartingCityText)
-                            .addComponent(departureTimeText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(arrivalTimeText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(departureTimeText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(deptartingCityText, javax.swing.GroupLayout.Alignment.TRAILING))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(15, 15, 15)
+                                        .addComponent(departingCityList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(ArrivalCItyText)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(destinationCityList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGap(18, 18, 18)
+                                                .addComponent(departureDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGap(18, 18, 18)
+                                                .addComponent(arrivalDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(timeSpinnerDeparture, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(timeSpinnerArrival, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                            .addComponent(findFlightButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(0, 10, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(LoginLogout)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(aboutButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(departingCityList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(departTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 71, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(arrivalTimeText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(arrivalTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(ArrivalCItyText)
-                                .addGap(18, 18, 18)
-                                .addComponent(destinationCityList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(LoginLogout)))
+                        .addComponent(exitButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(LoginLogout)
+                .addGap(15, 15, 15)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(LoginLogout)
+                    .addComponent(exitButton)
+                    .addComponent(aboutButton))
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(arrivalTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(departureTimeText, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(departingCityList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(deptartingCityText)
                             .addComponent(ArrivalCItyText)
                             .addComponent(destinationCityList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(departureTimeText, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(departTime, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(arrivalTimeText, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(timeSpinnerDeparture, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(departureDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(timeSpinnerArrival, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(arrivalDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(arrivalTimeText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(findFlightButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(6, 6, 6))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void importDataMenuOptionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importDataMenuOptionActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_importDataMenuOptionActionPerformed
+	private void departingCityListAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_departingCityListAncestorAdded
+            addCities(departingCityList);
+	}//GEN-LAST:event_departingCityListAncestorAdded
 
-    private void exitOptionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitOptionActionPerformed
-        System.exit(0);        // TODO add your handling code here:
-    }//GEN-LAST:event_exitOptionActionPerformed
+	private void destinationCityListAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_destinationCityListAncestorAdded
+            addCities(destinationCityList);
+	}//GEN-LAST:event_destinationCityListAncestorAdded
 
-    private void departingCityListAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_departingCityListAncestorAdded
-        addCities(departingCityList);
-    }//GEN-LAST:event_departingCityListAncestorAdded
+	private void findFlightButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findFlightButtonActionPerformed
+            boolean logged_in = this.vab.vabTools.is_logged_in();
+            if (!logged_in) {
+                logged_in = showLoginDialog();
+            }
+            if (logged_in) {
+                String from = String.valueOf(departingCityList.getSelectedItem());
+                String to = String.valueOf(destinationCityList.getSelectedItem());
+                LocalDate depDate = LocalDate.fromDateFields(departureDate.getDate());
+                LocalDate arrDate = LocalDate.fromDateFields(arrivalDate.getDate());
+                String departureTime = ((JSpinner.DateEditor) timeSpinnerDeparture.getEditor()).getFormat().format(timeSpinnerDeparture.getValue());
+                String arrivalTime = ((JSpinner.DateEditor) timeSpinnerArrival.getEditor()).getFormat().format(timeSpinnerArrival.getValue());
+            }
+	}//GEN-LAST:event_findFlightButtonActionPerformed
 
-    private void destinationCityListAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_destinationCityListAncestorAdded
-        addCities(destinationCityList);
-    }//GEN-LAST:event_destinationCityListAncestorAdded
+    private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_exitButtonActionPerformed
 
-    private void versionMenuOptionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_versionMenuOptionActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_versionMenuOptionActionPerformed
+    private void aboutButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutButtonActionPerformed
+        JOptionPane.showMessageDialog(aboutPopUp,
+                "VoyAirBooking was made by Aparna Kaliappan,\n"
+                + "Alison Pfannenstein and Shari Kurland in 2016\n"
+                + "for the University of Maryland, Baltimore County.\n"
+        );
+    }//GEN-LAST:event_aboutButtonActionPerformed
 
-    private void findFlightButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findFlightButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_findFlightButtonActionPerformed
+    private boolean showLoginDialog() {
+        int input = JOptionPane.showConfirmDialog(
+                registerPopUp,
+                regPanel,
+                "Login",
+                JOptionPane.OK_CANCEL_OPTION);
+        if (input == JOptionPane.OK_OPTION) {
+            String username = usernameField.getText();
+            String password = String.valueOf(passwordField.getPassword());
+        }
+        return false;
+    }
 
     private void addCities(JComboBox<String> dropdown) {
-        DefaultComboBoxModel model = new DefaultComboBoxModel();
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<String>();
         dropdown.setModel(model);
         int maxSize = -1;
         ArrayList<String> cities = this.vab.vabTools.get_cities();
+        cities.add(0, "Select A City");
         for (String s : cities) {
             if (s.length() > maxSize) {
                 maxSize = s.length();
@@ -242,7 +362,7 @@ public class GUI extends javax.swing.JFrame {
             model.addElement(s);
         }
         Dimension d = this.getSize();
-        d.width += maxSize + 150; // [massive shrug of guestimation how this works]
+        d.width += maxSize + 125; // [massive shrug of guestimation how this works]
         this.setSize(d);
     }
 
@@ -253,7 +373,7 @@ public class GUI extends javax.swing.JFrame {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+		 * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
         VoyAirBooking vab;
         try {
@@ -285,22 +405,27 @@ public class GUI extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel ArrivalCItyText;
     private javax.swing.JToggleButton LoginLogout;
-    private javax.swing.JMenu aboutDropdown;
-    private javax.swing.JMenuItem aboutMenuItem;
-    private javax.swing.JSpinner arrivalTime;
+    private javax.swing.JToggleButton aboutButton;
+    private javax.swing.JDialog aboutPopUp;
+    private org.freixas.jcalendar.JCalendarCombo arrivalDate;
     private javax.swing.JLabel arrivalTimeText;
-    private javax.swing.JSpinner departTime;
     private javax.swing.JComboBox<String> departingCityList;
+    private org.freixas.jcalendar.JCalendarCombo departureDate;
     private javax.swing.JLabel departureTimeText;
     private javax.swing.JLabel deptartingCityText;
     private javax.swing.JComboBox<String> destinationCityList;
-    private javax.swing.JMenuItem exitOption;
-    private javax.swing.JMenu fileDropdown;
+    private javax.swing.JToggleButton exitButton;
     private javax.swing.JButton findFlightButton;
-    private javax.swing.JMenuItem importDataMenuOption;
-    private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenuItem versionInfo;
-    private javax.swing.JMenuItem versionMenuOption;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JToggleButton jToggleButton1;
+    private javax.swing.JToggleButton jToggleButton2;
+    private javax.swing.JPasswordField passwordField;
+    private javax.swing.JPanel regPanel;
+    private javax.swing.JDialog registerPopUp;
+    private javax.swing.JSpinner timeSpinnerArrival;
+    private javax.swing.JSpinner timeSpinnerDeparture;
+    private javax.swing.JTextField usernameField;
     // End of variables declaration//GEN-END:variables
 
     private void initComponents(VoyAirBooking vab) {

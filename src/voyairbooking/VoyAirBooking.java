@@ -102,19 +102,7 @@ public class VoyAirBooking {
 					// 87 Kelowna
 					// 30 Campbell River
 					System.out.println("Going from Kelowna to Campbell River");
-					ArrayList<HashMap<String, String>> res = vab.vabTools.get_joined_routes("Kelowna", "Campbell River");
-					if(res.isEmpty()){
-						System.out.println("No routes for yoU!");
-					}
-					else{
-						for(HashMap<String, String> row: res){
-							for (Map.Entry<String, String> entry : row.entrySet())
-							{
-								System.out.println(entry.getKey() + " : " + entry.getValue());
-							}
-
-						}
-					}
+					vab.vabTools.get_routes("Kelowna", "Campbell River");
 				}
 			}
 			else{

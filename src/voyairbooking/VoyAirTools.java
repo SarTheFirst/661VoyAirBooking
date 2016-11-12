@@ -52,18 +52,8 @@ public class VoyAirTools {
 	private String surround_parens(String str){
 		return "(" + str + ")";
 	}
-	public ArrayList<HashMap<String, String>> get_routes(String start_city, String end_city){
-		try {
-			ArrayList<String> end_id = get_field(this.sqld.select("airport", "*", "city="+end_city), "airport_id");
-			ArrayList<String> start_id = get_field(this.sqld.select("airport", "*", "city="+start_city), "airport_id");
-			String end_ids = surround_parens(String.join(", ",end_id));
-			String start_ids = surround_parens(String.join(", ", start_id));
-			return this.sqld.select("route", "*", "takeoff_airport_id IN " + start_ids + " AND destination_airport_id IN " + end_ids);
-		} catch (SQLException e) {
-			return null;
-		}
-	}
-	public ArrayList<HashMap<String, String>> get_joined_routes(String start_city, String end_city){
+
+	public void get_routes(String start_city, String end_city){
 		//Dietakeoff_airport_id
 		try {
 			ArrayList<String> end_id  = get_field(this.sqld.select("airport", "*", "city="+end_city), "airport_id");
@@ -87,13 +77,11 @@ public class VoyAirTools {
 				    System.out.println(path);
 		    	}
 		    }
-		    return new ArrayList<HashMap<String, String>>();
 			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return null;
 	}
 	public boolean save_route(String route_id, String user_id){
 		HashMap<String, String> fields = new HashMap<String, String>();
