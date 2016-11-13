@@ -102,7 +102,7 @@ public class VoyAirBooking {
 					// 87 Kelowna
 					// 30 Campbell River
 					System.out.println("Going from Kelowna to Campbell River");
-					vab.vabTools.get_routes("Kelowna", "Campbell River");
+					//vab.vabTools.get_routes("Kelowna", "Campbell River");
 				}
 			}
 			else{

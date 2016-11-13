@@ -15,6 +15,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.joda.time.LocalDate;
+
 import sql_driver.SQL_Driver;
 import voyairbooking.Graph.Edge;
 
@@ -53,7 +55,7 @@ public class VoyAirTools {
 		return "(" + str + ")";
 	}
 
-	public void get_routes(String start_city, String end_city){
+	public void get_routes(String start_city, String end_city, LocalDate arrivalDate, LocalDate takeoffDate, String arrivalTime, String takeoffTime){
 		//Dietakeoff_airport_id
 		try {
 			ArrayList<String> end_id  = get_field(this.sqld.select("airport", "*", "city="+end_city), "airport_id");
@@ -61,23 +63,25 @@ public class VoyAirTools {
 			ArrayList<String> start_id = get_field(this.sqld.select("airport", "*", "city="+start_city), "airport_id");
 			String end_ids = surround_parens(String.join(", ",end_id));
 			String start_ids = surround_parens(String.join(", ", start_id));
-			
+
 			// #ThingsThatAreInsane
 			ArrayList<HashMap<String, String>> all_routes = this.sqld.select_all("route");
 			List<Graph.Edge> graph_list = new ArrayList<Graph.Edge>();
 			for(HashMap<String, String> row : all_routes){
 				graph_list.add(new Edge(row.get("takeoff_airport_id"), row.get("destination_airport_id"), Float.valueOf(row.get("price"))));
 			}
+			ArrayList<String[]> Possibilities = new ArrayList<String[]>();
 			Graph.Edge[] route_graph = new Graph.Edge[graph_list.size()];
-		    Graph g = new Graph(graph_list.toArray(route_graph));
-		    for(String start: start_id){
-		    	for(String end: end_id){
-				    g.dijkstra(start);
-				    String path = g.getThePath(end);
-				    System.out.println(path);
-		    	}
-		    }
-			
+			Graph g = new Graph(graph_list.toArray(route_graph));
+			for(String start: start_id){
+				for(String end: end_id){
+					g.dijkstra(start);
+					String path = g.getThePath(end);
+					Possibilities.add(path.split("->"));
+					System.out.println(path);
+				}
+			}
+
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -90,7 +94,7 @@ public class VoyAirTools {
 		return this.sqld.insert("transaction", fields);
 	}
 
-	public void register(String username, String password){
+	public boolean register(String username, String password){
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-256");
 			Map<String, String> toInsert = new HashMap<String, String>();
@@ -98,11 +102,13 @@ public class VoyAirTools {
 			toInsert.put("password", md.digest(password.getBytes()).toString());
 			if(this.sqld.insert("account", toInsert)){
 				System.out.println("Failed to register account.");
+				return false;
 			}
 			else{
 				System.out.println("Account registration was successful!");
 				try {
 					this.setUser_id(this.sqld.count_rows("account"));
+					return true;
 
 				} catch (SQLException e) {
 					System.err.println("How the hell did you get here?");
@@ -111,6 +117,7 @@ public class VoyAirTools {
 		} catch (NoSuchAlgorithmException e) {
 			System.err.println("No Such Algorithm");
 		}
+		return false;
 
 	}
 	private void setUser_id(Integer aNum) {
@@ -123,8 +130,8 @@ public class VoyAirTools {
 			HashMap<String, String> res = this.sqld.select_first("accounts", "*", "username=" + username);
 			if(res.isEmpty()){
 				System.out.println("No user by the username " + username + ".");
-				System.out.println("");
-				return false;
+				System.out.println("Registering them now.");
+				return register(username, password);
 			}
 			if(res.get("password").equals(md.digest(password.getBytes()))){
 				System.out.println("Welcome back, " + username + "!");
@@ -135,7 +142,6 @@ public class VoyAirTools {
 				System.out.println("Inccorrect password");
 				return false;
 			}
-
 		} catch (NoSuchAlgorithmException e) {
 			System.err.println("No Such Algorithm");
 			return false;
