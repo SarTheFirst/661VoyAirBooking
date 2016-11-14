@@ -40,7 +40,7 @@ public class VoyAirTools {
 	public ArrayList<String> get_cities(){
 		try {
 			ArrayList<HashMap<String, String>> res = this.sqld.select("airport", "airport_city", "", true);
-			ArrayList<String> toReturn = get_field(res, "city");
+			ArrayList<String> toReturn = get_field(res, "airport_city");
 			Collections.sort(toReturn, String.CASE_INSENSITIVE_ORDER);
 			return toReturn;
 		} catch (SQLException e) {
