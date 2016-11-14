@@ -88,29 +88,6 @@ public class VoyAirTools {
 				}
 				route_ids.add(aRoute);
 			}
-//			for(int j = 0; j < Possibilities.size(); j++){
-//				HashMap<String, Object> row = new HashMap<String, Object>();
-//				double totalPrice = 0;
-//				ArrayList<LocalTime> times = new ArrayList<LocalTime>();
-//				ArrayList<LocalDate> dates = new ArrayList<LocalDate>();
-//				for(int i = 0; i < Possibilities.get(j).length;i++){
-//					String[] p = Possibilities.get(j);
-//					
-//					HashMap<String, String> stopRes = this.sqld.select_first("route", "*", "route_id="+p[i]);
-//					totalPrice += Double.valueOf(stopRes.get("price"));
-//
-//					ResultSet joinedRes = this.sqld.executeQuery("SELECT * FROM route, route_airport WHERE route.route_id=" + p[i] + " AND route_airport.route_id=" + p[i]);
-//
-//					dates.add(dtf.parseLocalDate(joinedRes.getString("date")));
-//					times.add(fmt.parseLocalTime(joinedRes.getString("time")));
-//				}
-//				row.put("price", totalPrice);
-//				row.put("times", times);
-//				row.put("dates", dates);
-//				toReturn.add(row);
-//			}
-			int j = 2+1;
-			j++;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
