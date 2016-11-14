@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Scanner;
 
 import org.apache.commons.io.FilenameUtils;
+import org.joda.time.LocalDate;
 
 public class VoyAirBooking {
 	public VoyAirTools vabTools;
@@ -102,7 +103,9 @@ public class VoyAirBooking {
 					// 87 Kelowna
 					// 30 Campbell River
 					System.out.println("Going from Kelowna to Campbell River");
-					//vab.vabTools.get_routes("Kelowna", "Campbell River");
+// get_routes(String start_city, String end_city, LocalDate arrivalDate, LocalDate takeoffDate, String arrivalTime, String takeoffTime){
+
+					vab.vabTools.get_routes("Kelowna", "Campbell River", LocalDate.now(), LocalDate.now(), "", "");
 				}
 			}
 			else{

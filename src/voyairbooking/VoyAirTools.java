@@ -7,6 +7,7 @@ package voyairbooking;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import sql_driver.SQL_Driver;
 import voyairbooking.Graph.Edge;
@@ -23,6 +26,8 @@ import voyairbooking.Graph.Edge;
 public class VoyAirTools {
 	private String user_id;
 	protected SQL_Driver sqld;
+    protected DateTimeFormatter fmt = DateTimeFormat.forPattern("HH:mm");
+	protected DateTimeFormatter dtf = DateTimeFormat.forPattern("MM/dd/yyyy");
 	public VoyAirTools(boolean debugMode){
 		try {
 			this.sqld = new SQL_Driver(debugMode);
@@ -34,12 +39,10 @@ public class VoyAirTools {
 	}
 	public ArrayList<String> get_cities(){
 		try {
-			ArrayList<HashMap<String, String>> res = this.sqld.select("airport", "city", "", true);
-
+			ArrayList<HashMap<String, String>> res = this.sqld.select("airport", "airport_city", "", true);
 			ArrayList<String> toReturn = get_field(res, "city");
 			Collections.sort(toReturn, String.CASE_INSENSITIVE_ORDER);
 			return toReturn;
-
 		} catch (SQLException e) {
 			return null;
 		}
@@ -51,42 +54,69 @@ public class VoyAirTools {
 		}
 		return new ArrayList<String>(toReturn);
 	}
-	private String surround_parens(String str){
-		return "(" + str + ")";
-	}
 
 	public void get_routes(String start_city, String end_city, LocalDate arrivalDate, LocalDate takeoffDate, String arrivalTime, String takeoffTime){
-		//Dietakeoff_airport_id
 		try {
-			ArrayList<String> end_id  = get_field(this.sqld.select("airport", "*", "city="+end_city), "airport_id");
-
-			ArrayList<String> start_id = get_field(this.sqld.select("airport", "*", "city="+start_city), "airport_id");
-			String end_ids = surround_parens(String.join(", ",end_id));
-			String start_ids = surround_parens(String.join(", ", start_id));
-
-			// #ThingsThatAreInsane
-			ArrayList<HashMap<String, String>> all_routes = this.sqld.select_all("route");
+			ArrayList<String> end_id  = get_field(this.sqld.select("airport", "*", "airport_city="+end_city), "airport_id");
+			ArrayList<String> start_id = get_field(this.sqld.select("airport", "*", "airport_city="+start_city), "airport_id");
+			ArrayList<HashMap<String, String>> result = this.sqld.parseResultSet(this.sqld.executeQuery("select price, destination_airport_id, departure_airport_id from route_airport inner join route on route_airport.route_id=route.route_id"), "price, destination_airport_id, departure_airport_id");
 			List<Graph.Edge> graph_list = new ArrayList<Graph.Edge>();
-			for(HashMap<String, String> row : all_routes){
-				graph_list.add(new Edge(row.get("takeoff_airport_id"), row.get("destination_airport_id"), Float.valueOf(row.get("price"))));
+			for(HashMap<String, String> row: result){
+				graph_list.add(new Edge(row.get("departure_airport_id"), row.get("destination_airport_id"), Double.valueOf(row.get("price"))));
 			}
 			ArrayList<String[]> Possibilities = new ArrayList<String[]>();
 			Graph.Edge[] route_graph = new Graph.Edge[graph_list.size()];
 			Graph g = new Graph(graph_list.toArray(route_graph));
+
 			for(String start: start_id){
 				for(String end: end_id){
 					g.dijkstra(start);
-					String path = g.getThePath(end);
-					Possibilities.add(path.split("->"));
-					System.out.println(path);
+					Possibilities.add(g.getThePath(end).split("\\s*->\\s*"));
+					System.out.println(g.getThePath(end));
 				}
 			}
-
+			ArrayList<ArrayList<ArrayList<String>>> route_ids = new ArrayList<ArrayList<ArrayList<String>>>();
+			for(String[] p : Possibilities){
+				ArrayList<ArrayList<String>> aRoute = new ArrayList<ArrayList<String>>();
+				for(int i = 0; i < p.length-1; i++){
+					ArrayList<String> flight = new ArrayList<String>();
+					ArrayList<HashMap<String, String>> execRes = this.sqld.parseResultSet(this.sqld.executeQuery("SELECT * FROM route_airport WHERE departure_airport_id="+p[i].trim() +" AND destination_airport_id="+p[i+1].trim()), "*");
+					for(HashMap<String,String> row: execRes){
+						flight.add(row.get("route_id"));
+					}
+					aRoute.add(flight);
+				}
+				route_ids.add(aRoute);
+			}
+//			for(int j = 0; j < Possibilities.size(); j++){
+//				HashMap<String, Object> row = new HashMap<String, Object>();
+//				double totalPrice = 0;
+//				ArrayList<LocalTime> times = new ArrayList<LocalTime>();
+//				ArrayList<LocalDate> dates = new ArrayList<LocalDate>();
+//				for(int i = 0; i < Possibilities.get(j).length;i++){
+//					String[] p = Possibilities.get(j);
+//					
+//					HashMap<String, String> stopRes = this.sqld.select_first("route", "*", "route_id="+p[i]);
+//					totalPrice += Double.valueOf(stopRes.get("price"));
+//
+//					ResultSet joinedRes = this.sqld.executeQuery("SELECT * FROM route, route_airport WHERE route.route_id=" + p[i] + " AND route_airport.route_id=" + p[i]);
+//
+//					dates.add(dtf.parseLocalDate(joinedRes.getString("date")));
+//					times.add(fmt.parseLocalTime(joinedRes.getString("time")));
+//				}
+//				row.put("price", totalPrice);
+//				row.put("times", times);
+//				row.put("dates", dates);
+//				toReturn.add(row);
+//			}
+			int j = 2+1;
+			j++;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+	
 	public boolean save_route(String route_id, String user_id){
 		HashMap<String, String> fields = new HashMap<String, String>();
 		fields.put("route_id",  route_id);

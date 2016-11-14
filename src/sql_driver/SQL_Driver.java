@@ -9,7 +9,9 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
@@ -91,26 +93,24 @@ public class SQL_Driver {
 			return null;
 		}
 	}
+	@SuppressWarnings("serial")
 	public ArrayList<HashMap<String, String>> select_all(String table_name) throws SQLException {
 		return select(table_name, new ArrayList<String>() {{ add("*");}});
 	}
-	public ArrayList<HashMap<String, String>> select(String table_name, ArrayList<String> select) throws SQLException{
+	public ArrayList<HashMap<String, String>> select(String table_name, List<String> select) throws SQLException{
 		return select(table_name, select, "");
 	}
-	@SuppressWarnings("serial")
 	public ArrayList<HashMap<String, String>> select(String table_name, String select, String where) throws SQLException{
-		return select(table_name, new ArrayList<String>() {{ add(select);}}, where);
+		return select(table_name, Arrays.asList(select.split("\\s*,\\s*")), where);
 	}
-	public ArrayList<HashMap<String, String>> select(String table_name, ArrayList<String> select, String where) throws SQLException{
+	public ArrayList<HashMap<String, String>> select(String table_name, List<String> select, String where) throws SQLException{
 		return select(table_name, select, where, "", false);
 	}
-	@SuppressWarnings("serial")
 	public ArrayList<HashMap<String, String>> select(String table_name, String select, String where, boolean distinct) throws SQLException{
-		return select(table_name, new ArrayList<String>() {{ add(select);}}, where, "", distinct);
+		return select(table_name,  Arrays.asList(select.split("\\s*,\\s*")), where, "", distinct);
 	}
 
-	public ArrayList<HashMap<String, String>> select(String table_name, ArrayList<String> select, String where, String other, boolean distinct) throws SQLException{
-		ArrayList<HashMap<String, String>> toReturn = new ArrayList<HashMap<String, String>>();
+	public ArrayList<HashMap<String, String>> select(String table_name, List<String> select, String where, String other, boolean distinct) throws SQLException{
 
 		String sql = "SELECT ";
 		if(distinct){
@@ -124,40 +124,58 @@ public class SQL_Driver {
 			sql += other;
 		}
 		ResultSet rs = executeQuery(sql);
-		ArrayList<String> colNames= select;
+		return parseResultSet(rs, select);
+	}   
+	
+	public HashMap<String, String> parseFirstResultSet(ResultSet rs, String select){
+		return parseFirstResultSet(rs,  Arrays.asList(select.split("\\s*,\\s*")));
+	}
+	public HashMap<String, String> parseFirstResultSet(ResultSet rs, List<String> select){
+		ArrayList<HashMap<String, String>> res = parseResultSet(rs, select);
+		return res.get(0);
+	}
+	public ArrayList<HashMap<String, String>> parseResultSet(ResultSet rs, String select){
+		return parseResultSet(rs, Arrays.asList(select.split("\\s*,\\s*")));
+	}
+
+	public ArrayList<HashMap<String, String>> parseResultSet(ResultSet rs, List<String> select){
+		ArrayList<HashMap<String, String>> toReturn = new ArrayList<HashMap<String, String>>();
+		List<String> colNames= select;
 		if(select.contains("*")){
 			colNames = getColumnNames(rs);
 		}
-		while(rs.next()){
-			HashMap<String, String> row = new HashMap<String, String>();
+		//This will never happen, yo
+		try {
+			while(rs.next()){
+				HashMap<String, String> row = new HashMap<String, String>();
 
-			for(String col : colNames){
-				row.put(col, rs.getString(col));
+				for(String col : colNames){
+					row.put(col, rs.getString(col));
+				}
+				toReturn.add(row);
 			}
-			toReturn.add(row);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return toReturn;
-	}   
+	}
 	@SuppressWarnings("serial")
 	public HashMap<String, String> select_first(String table_name) throws SQLException{
 		return select_first(table_name, new ArrayList<String>() {{ add("*"); }});
 	}
-	@SuppressWarnings("serial")
 	public HashMap<String, String> select_first(String table_name, String select, String where) throws SQLException{
-		return select_first(table_name, new ArrayList<String>() {{ add(select);}}, where);
+		return select_first(table_name, Arrays.asList(select.split("\\s*,\\s*")), where);
 	}
-	public HashMap<String, String> select_first(String table_name, ArrayList<String> select) throws SQLException{
+	public HashMap<String, String> select_first(String table_name, List<String> select) throws SQLException{
 		return select_first(table_name, select, "");
 	}
-	public HashMap<String, String> select_first(String table_name, ArrayList<String> select, String where) throws SQLException{
+	public HashMap<String, String> select_first(String table_name, List<String> select, String where) throws SQLException{
 		return select_first(table_name, select, where, "");
 	}
-	public HashMap<String, String> select_first(String table_name, ArrayList<String> select, String where, String other) throws SQLException{
-		HashMap<String, String> toReturn = new HashMap<String, String>();
+	public HashMap<String, String> select_first(String table_name, List<String> select, String where, String other) throws SQLException{
 		String sel = StringUtils.join(select,",");
-		if(!sel.contains("count(*)")){
-			sel = "'" + sqlProof(sel) + "'";
-		}
+		
 		String sql = "Select " +  sel + " FROM " + sqlProof(table_name) + " ";
 		if(!where.isEmpty()){
 			sql += " WHERE " + fixWhere(where);
@@ -167,16 +185,7 @@ public class SQL_Driver {
 			sql += other;
 		}
 		ResultSet rs = executeQuery(sql);
-		ArrayList<String> colNames = select;
-		if(select.contains("*")){
-			colNames = getColumnNames(rs);
-		}
-		while(rs.next()){
-			for(String col : colNames){
-				toReturn.put(col, rs.getString(col));
-			}
-		}
-		return toReturn;
+		return parseFirstResultSet(rs, select);
 	}
 	public ArrayList<String> getColumnNames(ResultSet rs){
 		ResultSetMetaData rsmd;
@@ -313,7 +322,7 @@ public class SQL_Driver {
 		for(int i = 0; i < res.length; i++){
 			if(!newWhere.isEmpty()){
 				newWhere += allMatches.get(counter++);
-				newWhere += "'" + res[i]+"'";
+				newWhere += " '" + res[i].trim()+"'";
 			}
 			else{
 				newWhere += res[i];
