@@ -187,6 +187,9 @@ public class SQL_Driver {
 		ResultSet rs = executeQuery(sql);
 		return parseFirstResultSet(rs, select);
 	}
+	public ArrayList<String> getColumnNames(String table_name){
+		return this.schema.get(table_name);
+	}
 	public ArrayList<String> getColumnNames(ResultSet rs){
 		ResultSetMetaData rsmd;
 		try {

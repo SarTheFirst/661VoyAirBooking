@@ -7,7 +7,6 @@ package voyairbooking;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,7 +15,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.table.AbstractTableModel;
+
 import org.joda.time.LocalDate;
+import org.joda.time.LocalTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -26,7 +28,7 @@ import voyairbooking.Graph.Edge;
 public class VoyAirTools {
 	private String user_id;
 	protected SQL_Driver sqld;
-    protected DateTimeFormatter fmt = DateTimeFormat.forPattern("HH:mm");
+	protected DateTimeFormatter fmt = DateTimeFormat.forPattern("HH:mm");
 	protected DateTimeFormatter dtf = DateTimeFormat.forPattern("MM/dd/yyyy");
 	public VoyAirTools(boolean debugMode){
 		try {
@@ -55,7 +57,7 @@ public class VoyAirTools {
 		return new ArrayList<String>(toReturn);
 	}
 
-	public void get_routes(String start_city, String end_city, LocalDate arrivalDate, LocalDate takeoffDate, String arrivalTime, String takeoffTime){
+	public ArrayList<ArrayList<ArrayList<String>>> get_routes(String start_city, String end_city){
 		try {
 			ArrayList<String> end_id  = get_field(this.sqld.select("airport", "*", "airport_city="+end_city), "airport_id");
 			ArrayList<String> start_id = get_field(this.sqld.select("airport", "*", "airport_city="+start_city), "airport_id");
@@ -88,12 +90,41 @@ public class VoyAirTools {
 				}
 				route_ids.add(aRoute);
 			}
+			return route_ids;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return null;
 	}
-	
+
+	public ArrayList<ArrayList<ArrayList<HashMap<String, String>>>> trim_routes(ArrayList<ArrayList<ArrayList<String>>> routes, LocalDate arrivalDate, LocalDate takeoffDate, LocalTime arrivalTime, LocalTime takeoffTime){
+		try {
+			ArrayList<ArrayList<ArrayList<HashMap<String, String>>>> flight_options = new ArrayList<ArrayList<ArrayList<HashMap<String, String>>>> ();
+			for(ArrayList<ArrayList<String>> aRoute : routes){
+				ArrayList<ArrayList<HashMap<String, String>>> route_leg = new ArrayList<ArrayList<HashMap<String, String>>>();
+				for(ArrayList<String> flight: aRoute){
+					ArrayList<HashMap<String, String>> route_details = this.sqld.select("route", "*", "route_id IN " + flight.toString().replaceAll("\\[", "(").replaceAll("\\]",")")) ;
+					ArrayList<HashMap<String, String>> time_working_flights = new ArrayList<HashMap<String, String>>();
+					for(HashMap<String, String> row: route_details){
+						LocalDate date = this.dtf.parseLocalDate(row.get("date"));
+						LocalTime time = this.fmt.parseLocalTime(row.get("time"));
+						if(!takeoffDate.isBefore(date) || (takeoffDate.isEqual(date) && !takeoffTime.isBefore(time))){
+							time_working_flights.add(row);
+						}
+					}
+					route_leg.add(time_working_flights);
+				}
+				flight_options.add(route_leg);
+			}
+			return flight_options;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+
+	}
 	public boolean save_route(String route_id, String user_id){
 		HashMap<String, String> fields = new HashMap<String, String>();
 		fields.put("route_id",  route_id);

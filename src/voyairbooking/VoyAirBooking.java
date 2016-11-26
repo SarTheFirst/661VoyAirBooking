@@ -12,6 +12,7 @@ import java.util.Scanner;
 
 import org.apache.commons.io.FilenameUtils;
 import org.joda.time.LocalDate;
+import org.joda.time.LocalTime;
 
 public class VoyAirBooking {
 	public VoyAirTools vabTools;
@@ -83,6 +84,7 @@ public class VoyAirBooking {
 		for(String s : args){
 			arguments.add(s.toLowerCase());
 		}
+		Scanner scanner = new Scanner(System.in);
 
 		VoyAirBooking vab;
 		try {
@@ -100,12 +102,66 @@ public class VoyAirBooking {
 					System.out.println("-h [--help] displays this help text.");
 				}
 				else{
-					// 87 Kelowna
-					// 30 Campbell River
-					System.out.println("Going from Kelowna to Campbell River");
-// get_routes(String start_city, String end_city, LocalDate arrivalDate, LocalDate takeoffDate, String arrivalTime, String takeoffTime){
+					System.out.println("Do you need to look at the list of cities available?");
+					String need_list = scanner.nextLine();
+					if(need_list.equalsIgnoreCase("y") || need_list.equalsIgnoreCase("yes")){
+						ArrayList<String> city_list = vab.vabTools.get_cities();
+						System.out.println("The cities will be displayed in groups of 20.");
+						int city_counter = 0;
+						boolean keepListingCities = true;
+						do{
+							int i = city_counter;
+							while(i < city_counter + 20){
+								if(i < city_list.size()){
+									System.out.println(city_list.get(i));
+								}
+								i++;
+							}
+							city_counter = i;
+							System.out.println("Keep listing cities? (Y/n)");
+							need_list = scanner.nextLine();
+							keepListingCities = need_list.equalsIgnoreCase("y") || need_list.equalsIgnoreCase("yes");
+						}while(keepListingCities);
+					}
+					System.out.println("Where are you departing from?");
+					String departing_airport = scanner.nextLine();
+					System.out.println("Where are you going to?");
+					String arrival_airport = scanner.nextLine();
 
-					vab.vabTools.get_routes("Kelowna", "Campbell River", LocalDate.now(), LocalDate.now(), "", "");
+					try{
+						System.out.println("When do you want to depart? Please use the format dd/MM/YYYY HH:mm");
+						String[] departureInput = scanner.nextLine().split(" ");
+						LocalDate departureDate = LocalDate.parse(departureInput[0]);
+						LocalTime departureTime = LocalTime.parse(departureInput[1]);
+
+						System.out.println("When do you want to arrive? Please use the format dd/MM/YYYY HH:mm");
+						String[] arrivalInput = scanner.nextLine().split(" ");
+						LocalDate arrivalDate = LocalDate.parse(arrivalInput[0]);
+						LocalTime arrivalTime = LocalTime.parse(arrivalInput[1]);
+
+						//System.out.println("Going from Kelowna to Campbell River");
+						ArrayList<ArrayList<ArrayList<String>>> route_results = vab.vabTools.get_routes(departing_airport, arrival_airport);
+						//ArrayList<ArrayList<ArrayList<String>>> res = vab.vabTools.get_routes("Kelowna", "Campbell River");
+						/*
+						 * HashMap: Route row
+						 * ArrayList: Leg Options
+						 * ArrayList: Flight Leg
+						 * ArrayList: Flight Options
+						 */
+						ArrayList<ArrayList<ArrayList<HashMap<String, String>>>> trimmed_flights = vab.vabTools.trim_routes(route_results, arrivalDate, departureDate, arrivalTime, departureTime);
+						System.out.println("There are " + trimmed_flights.size() + " options for you to choose from.");
+						for(int i = 0; i < trimmed_flights.size(); i++){
+							System.out.println(i + ") ");
+							for(ArrayList<HashMap<String, String>> flight_leg: trimmed_flights.get(i)){
+								System.out.println("hello world");
+							}
+						}
+					}
+
+					catch(IllegalArgumentException e){
+						System.err.println("Invalid date input! Relaunch the program and adhere to the the format provided.");
+						System.exit(0);
+					}
 				}
 			}
 			else{
