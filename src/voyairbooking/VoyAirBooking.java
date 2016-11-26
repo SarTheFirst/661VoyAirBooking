@@ -139,6 +139,9 @@ public class VoyAirBooking {
 						LocalDate arrivalDate = LocalDate.parse(arrivalInput[0]);
 						LocalTime arrivalTime = LocalTime.parse(arrivalInput[1]);
 
+                        System.out.println("How many tickets would you like to purchase? Please enter an integer in number format");
+                        int numTickets = scanner.nextLine();
+                        
 						//System.out.println("Going from Kelowna to Campbell River");
 						ArrayList<ArrayList<ArrayList<String>>> route_results = vab.vabTools.get_routes(departing_airport, arrival_airport);
 						//ArrayList<ArrayList<ArrayList<String>>> res = vab.vabTools.get_routes("Kelowna", "Campbell River");
@@ -148,7 +151,7 @@ public class VoyAirBooking {
 						 * ArrayList: Flight Leg
 						 * ArrayList: Flight Options
 						 */
-						ArrayList<ArrayList<ArrayList<HashMap<String, String>>>> trimmed_flights = vab.vabTools.trim_routes(route_results, arrivalDate, departureDate, arrivalTime, departureTime);
+						ArrayList<ArrayList<ArrayList<HashMap<String, String>>>> trimmed_flights = vab.vabTools.trim_routes(route_results, arrivalDate, departureDate, arrivalTime, departureTime, numTickets);
 						System.out.println("There are " + trimmed_flights.size() + " options for you to choose from.");
 						for(int i = 0; i < trimmed_flights.size(); i++){
 							System.out.println(i + ") ");

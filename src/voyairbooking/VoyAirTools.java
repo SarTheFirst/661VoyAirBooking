@@ -98,18 +98,26 @@ public class VoyAirTools {
 		return null;
 	}
 
-	public ArrayList<ArrayList<ArrayList<HashMap<String, String>>>> trim_routes(ArrayList<ArrayList<ArrayList<String>>> routes, LocalDate arrivalDate, LocalDate takeoffDate, LocalTime arrivalTime, LocalTime takeoffTime){
+	public ArrayList<ArrayList<ArrayList<HashMap<String, String>>>> trim_routes(ArrayList<ArrayList<ArrayList<String>>> routes, LocalDate arrivalDate, LocalDate takeoffDate, LocalTime arrivalTime, LocalTime takeoffTime, int numTickets){
 		try {
 			ArrayList<ArrayList<ArrayList<HashMap<String, String>>>> flight_options = new ArrayList<ArrayList<ArrayList<HashMap<String, String>>>> ();
 			for(ArrayList<ArrayList<String>> aRoute : routes){
 				ArrayList<ArrayList<HashMap<String, String>>> route_leg = new ArrayList<ArrayList<HashMap<String, String>>>();
 				for(ArrayList<String> flight: aRoute){
 					ArrayList<HashMap<String, String>> route_details = this.sqld.select("route", "*", "route_id IN " + flight.toString().replaceAll("\\[", "(").replaceAll("\\]",")")) ;
+                    
+                    // CALCULATE numAvailableSeats HERE BY READING num_total_seats AND num_reserved_seats FROM THE route TABLE
+                    // So, numAvailableSeats = num_total_seats - num_reserved_seats
+                    
+                    // ONCE THE PASSENGER SELECTS A SPECIFIC ROUTE, num_reserved_seats FOR THAT ROUTE MUST BE UPDATED
+                    // SO, num_reserved_seats += numTickets
+                    // WOULD NEED A SEPARATE FUNCTION FOR THIS
+                    
 					ArrayList<HashMap<String, String>> time_working_flights = new ArrayList<HashMap<String, String>>();
 					for(HashMap<String, String> row: route_details){
 						LocalDate date = this.dtf.parseLocalDate(row.get("date"));
 						LocalTime time = this.fmt.parseLocalTime(row.get("time"));
-						if(!takeoffDate.isBefore(date) || (takeoffDate.isEqual(date) && !takeoffTime.isBefore(time))){
+						if((!takeoffDate.isBefore(date) || (takeoffDate.isEqual(date) && !takeoffTime.isBefore(time))) && numTickets <= numAvailableSeats){
 							time_working_flights.add(row);
 						}
 					}
