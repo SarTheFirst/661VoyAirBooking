@@ -61,7 +61,7 @@ public class VoyAirTools {
 		try {
 			ArrayList<String> end_id  = get_field(this.sqld.select("airport", "*", "airport_city="+end_city), "airport_id");
 			ArrayList<String> start_id = get_field(this.sqld.select("airport", "*", "airport_city="+start_city), "airport_id");
-			ArrayList<HashMap<String, String>> result = this.sqld.parseResultSet(this.sqld.executeQuery("select price, destination_airport_id, departure_airport_id from route_airport inner join route on route_airport.route_id=route.route_id"), "price, destination_airport_id, departure_airport_id");
+			ArrayList<HashMap<String, String>> result = this.sqld.parseResultSet(this.sqld.executeQuery("select price, destination_airport_id, departure_airport_id from route"), "price, destination_airport_id, departure_airport_id");
 			List<Graph.Edge> graph_list = new ArrayList<Graph.Edge>();
 			for(HashMap<String, String> row: result){
 				graph_list.add(new Edge(row.get("departure_airport_id"), row.get("destination_airport_id"), Double.valueOf(row.get("price"))));
@@ -82,7 +82,7 @@ public class VoyAirTools {
 				ArrayList<ArrayList<String>> aRoute = new ArrayList<ArrayList<String>>();
 				for(int i = 0; i < p.length-1; i++){
 					ArrayList<String> flight = new ArrayList<String>();
-					ArrayList<HashMap<String, String>> execRes = this.sqld.parseResultSet(this.sqld.executeQuery("SELECT * FROM route_airport WHERE departure_airport_id="+p[i].trim() +" AND destination_airport_id="+p[i+1].trim()), "*");
+					ArrayList<HashMap<String, String>> execRes = this.sqld.parseResultSet(this.sqld.executeQuery("SELECT * FROM route WHERE departure_airport_id="+p[i].trim() +" AND destination_airport_id="+p[i+1].trim()), "*");
 					for(HashMap<String,String> row: execRes){
 						flight.add(row.get("route_id"));
 					}
