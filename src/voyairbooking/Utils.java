@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class Utils{
 	private static final char DEFAULT_SEPARATOR = ',';
@@ -19,7 +20,17 @@ public class Utils{
         return parseCSVLine(cvsLine, separators, DEFAULT_QUOTE);
     }
 
-
+    public int getPositiveNumber(Scanner scanner, String prompt){
+    	try{
+    		System.out.println(prompt);
+    		int aNum = Integer.valueOf(scanner.nextLine());
+    		return aNum;
+    	}
+    	catch(NumberFormatException e){
+    		System.out.println("Invalid input");
+    		return getPositiveNumber(scanner, prompt);
+    	}
+    }
     @SuppressWarnings("null")
 	public List<String> parseCSVLine(String cvsLine, char separators, char customQuote) {
 

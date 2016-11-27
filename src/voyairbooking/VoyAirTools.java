@@ -28,6 +28,7 @@ import voyairbooking.Graph.Edge;
 public class VoyAirTools {
 	private String user_id;
 	protected SQL_Driver sqld;
+	
 	protected DateTimeFormatter fmt = DateTimeFormat.forPattern("HH:mm");
 	protected DateTimeFormatter dtf = DateTimeFormat.forPattern("MM/dd/yyyy");
 	public VoyAirTools(boolean debugMode){
@@ -115,10 +116,19 @@ public class VoyAirTools {
                     
 					ArrayList<HashMap<String, String>> time_working_flights = new ArrayList<HashMap<String, String>>();
 					for(HashMap<String, String> row: route_details){
+						boolean first_pass = true;
 						LocalDate date = this.dtf.parseLocalDate(row.get("date"));
 						LocalTime time = this.fmt.parseLocalTime(row.get("time"));
-						if((!takeoffDate.isBefore(date) || (takeoffDate.isEqual(date) && !takeoffTime.isBefore(time))) && numTickets <= numAvailableSeats){
+						if(takeoffDate.isBefore(date) || (takeoffDate.isEqual(date) && !takeoffTime.isBefore(time))){
+							if(first_pass){
+								HashMap<String, String> dep_airport_data = this.sqld.select_first("airport", "*",  "airport_id=" + row.get("departure_airport_id"));
+								HashMap<String, String> dest_airport_data = this.sqld.select_first("airport", "*", "airport_id="+ row.get("destination_airport_id"));
+								row.put("departure_city_name", dep_airport_data.get("airport_city"));
+								row.put("destination_city_name", dest_airport_data.get("airport_city"));
+								first_pass = false;
+							}
 							time_working_flights.add(row);
+							
 						}
 					}
 					route_leg.add(time_working_flights);

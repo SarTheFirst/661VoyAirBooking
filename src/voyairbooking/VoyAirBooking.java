@@ -1,6 +1,9 @@
 package voyairbooking;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.SQLException;
@@ -80,12 +83,21 @@ public class VoyAirBooking {
 		System.out.println("Done.");
 	}
 	public static void main(String[] args) {
+		boolean TEST = true;
 		ArrayList<String> arguments = new ArrayList<String>();
 		for(String s : args){
 			arguments.add(s.toLowerCase());
 		}
 		Scanner scanner = new Scanner(System.in);
-
+		BufferedReader br = null;
+		if(TEST){
+			try {
+				br = new BufferedReader(new FileReader(Paths.get(System.getProperty("user.dir"), "tests", "test1.txt").toFile()));
+			} catch (FileNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
 		VoyAirBooking vab;
 		try {
 			vab = new VoyAirBooking();
@@ -103,7 +115,15 @@ public class VoyAirBooking {
 				}
 				else{
 					System.out.println("Do you need to look at the list of cities available?");
-					String need_list = scanner.nextLine();
+
+					String need_list;
+					if(!TEST){
+						need_list = scanner.nextLine();
+
+					}else{
+						need_list = br.readLine();
+
+					}
 					if(need_list.equalsIgnoreCase("y") || need_list.equalsIgnoreCase("yes")){
 						ArrayList<String> city_list = vab.vabTools.get_cities();
 						System.out.println("The cities will be displayed in groups of 20.");
@@ -123,25 +143,55 @@ public class VoyAirBooking {
 							keepListingCities = need_list.equalsIgnoreCase("y") || need_list.equalsIgnoreCase("yes");
 						}while(keepListingCities);
 					}
-					System.out.println("Where are you departing from?");
-					String departing_airport = scanner.nextLine();
-					System.out.println("Where are you going to?");
-					String arrival_airport = scanner.nextLine();
+					String departing_airport;
+					String arrival_airport;
+					if(!TEST){
+						System.out.println("Where are you departing from?");
+						departing_airport = scanner.nextLine();
+						System.out.println("Where are you going to?");
+						arrival_airport = scanner.nextLine();
+					}
+					else{
+						System.out.println("Where are you departing from?");
+						departing_airport = br.readLine();
+						System.out.println("Where are you going to?");
+						arrival_airport = br.readLine();
+					}
 
+					LocalDate departureDate;
+					LocalTime departureTime;
+					LocalDate arrivalDate;
+					LocalTime arrivalTime;
+					int numTickets;
 					try{
-						System.out.println("When do you want to depart? Please use the format dd/MM/YYYY HH:mm");
-						String[] departureInput = scanner.nextLine().split(" ");
-						LocalDate departureDate = LocalDate.parse(departureInput[0]);
-						LocalTime departureTime = LocalTime.parse(departureInput[1]);
+						if(!TEST){
+							System.out.println("When do you want to depart? Please use the format dd/MM/YYYY HH:mm");
+							String[] departureInput = scanner.nextLine().split(" ");
+							departureDate =  vab.vabTools.dtf.parseLocalDate(departureInput[0]);
+							departureTime =  vab.vabTools.fmt.parseLocalTime(departureInput[1]);
 
-						System.out.println("When do you want to arrive? Please use the format dd/MM/YYYY HH:mm");
-						String[] arrivalInput = scanner.nextLine().split(" ");
-						LocalDate arrivalDate = LocalDate.parse(arrivalInput[0]);
-						LocalTime arrivalTime = LocalTime.parse(arrivalInput[1]);
+							System.out.println("When do you want to arrive? Please use the format dd/MM/YYYY HH:mm");
+							String[] arrivalInput = scanner.nextLine().split(" ");
+							arrivalDate = vab.vabTools.dtf.parseLocalDate(arrivalInput[0]);
+							arrivalTime = vab.vabTools.fmt.parseLocalTime(arrivalInput[1]);
 
-                        System.out.println("How many tickets would you like to purchase? Please enter an integer in number format");
-                        int numTickets = scanner.nextLine();
-                        
+							String prompt = "How many tickets would you like to purchase? Please enter a positive integer";
+							numTickets = vab.util.getPositiveNumber(scanner, prompt);
+						}
+						else{
+							System.out.println("When do you want to depart? Please use the format dd/MM/YYYY HH:mm");
+							String[] departureInput = br.readLine().split(" ");
+							departureDate =  vab.vabTools.dtf.parseLocalDate(departureInput[0]);
+							departureTime =  vab.vabTools.fmt.parseLocalTime(departureInput[1]);
+
+							System.out.println("When do you want to arrive? Please use the format dd/MM/YYYY HH:mm");
+							String[] arrivalInput = br.readLine().split(" ");
+							arrivalDate = vab.vabTools.dtf.parseLocalDate(arrivalInput[0]);
+							arrivalTime = vab.vabTools.fmt.parseLocalTime(arrivalInput[1]);
+
+							System.out.println("How many tickets would you like to purchase? Please enter a positive integer");
+							numTickets = Integer.valueOf(br.readLine());
+						}
 						//System.out.println("Going from Kelowna to Campbell River");
 						ArrayList<ArrayList<ArrayList<String>>> route_results = vab.vabTools.get_routes(departing_airport, arrival_airport);
 						//ArrayList<ArrayList<ArrayList<String>>> res = vab.vabTools.get_routes("Kelowna", "Campbell River");
@@ -152,11 +202,17 @@ public class VoyAirBooking {
 						 * ArrayList: Flight Options
 						 */
 						ArrayList<ArrayList<ArrayList<HashMap<String, String>>>> trimmed_flights = vab.vabTools.trim_routes(route_results, arrivalDate, departureDate, arrivalTime, departureTime, numTickets);
-						System.out.println("There are " + trimmed_flights.size() + " options for you to choose from.");
 						for(int i = 0; i < trimmed_flights.size(); i++){
-							System.out.println(i + ") ");
+							System.out.println(i+1 + ") ");
 							for(ArrayList<HashMap<String, String>> flight_leg: trimmed_flights.get(i)){
-								System.out.println("hello world");
+								System.out.println("Options for the flight from " + flight_leg.get(0).get("departure_city_name") + " to " + flight_leg.get(0).get("destination_city_name") + ": ");
+
+								for(HashMap<String, String> route: flight_leg){
+									for (String key : route.keySet()) {
+									    System.out.println("\t" + key + " " + route.get(key));
+									}
+									System.out.println("\n\n");
+								}
 							}
 						}
 					}
@@ -169,7 +225,7 @@ public class VoyAirBooking {
 			}
 			else{
 			}
-		} catch (SQLException e) {
+		} catch (SQLException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

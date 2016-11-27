@@ -339,13 +339,13 @@ public class GUI extends javax.swing.JFrame {
 			LocalTime arrTime = LocalTime.parse(arrivalTime);
 			ArrayList<ArrayList<ArrayList<String>>> all_routes = this.vab.vabTools.get_routes(from, to);
                       
-			ArrayList<ArrayList<ArrayList<HashMap<String, String>>>> final_routes = this.vab.vabTools.trim_routes(all_routes, arrDate, depDate, arrTime, depTime);
-			if(final_routes.isEmpty()){
-				JOptionPane.showMessageDialog(aboutPopUp, "There were no flights available for with the given parameters.");
-			}
-			else{
-				displayTable(final_routes);
-			}
+			//ArrayList<ArrayList<ArrayList<HashMap<String, String>>>> final_routes = this.vab.vabTools.trim_routes(all_routes, arrDate, depDate, arrTime, depTime);
+//			if(final_routes.isEmpty()){
+//				JOptionPane.showMessageDialog(aboutPopUp, "There were no flights available for with the given parameters.");
+//			}
+//			else{
+//				displayTable(final_routes);
+//			}
 		}
 	}//GEN-LAST:event_findFlightButtonActionPerformed
 	
