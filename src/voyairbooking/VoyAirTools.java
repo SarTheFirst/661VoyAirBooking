@@ -108,7 +108,6 @@ public class VoyAirTools {
 				for(ArrayList<String> flight: aRoute){
 					ArrayList<HashMap<String, String>> route_details = this.sqld.select("route", "*", "route_id IN " + flight.toString().replaceAll("\\[", "(").replaceAll("\\]",")")) ;
 
-
 					ArrayList<HashMap<String, String>> time_working_flights = new ArrayList<HashMap<String, String>>();
 					boolean first_pass = true;
 
