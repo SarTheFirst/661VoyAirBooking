@@ -43,7 +43,7 @@ public class GUI extends javax.swing.JFrame {
 	 * Creates new form GUI
 	 */
 	public GUI() {
-		this.vab = new VoyAirBooking();
+		this.vab = new VoyAirBooking(true);
 		initComponents();
 		this.originalSize = this.getSize();
 		this.originalSize.height -= 125;

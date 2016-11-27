@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.commons.io.FilenameUtils;
 import org.joda.time.LocalDate;
@@ -20,8 +22,8 @@ import org.joda.time.LocalTime;
 public class VoyAirBooking {
 	public VoyAirTools vabTools;
 	public Utils util;
-	public VoyAirBooking(){
-		this.vabTools = new VoyAirTools(true);
+	public VoyAirBooking(boolean debug){
+		this.vabTools = new VoyAirTools(debug);
 		this.util = new Utils();
 	}
 	public void readInData(File f){
@@ -83,14 +85,14 @@ public class VoyAirBooking {
 		System.out.println("Done.");
 	}
 	public static void main(String[] args) {
-		boolean TEST = true;
+		boolean DEBUG_MODE = true;
 		ArrayList<String> arguments = new ArrayList<String>();
 		for(String s : args){
 			arguments.add(s.toLowerCase());
 		}
 		Scanner scanner = new Scanner(System.in);
 		BufferedReader br = null;
-		if(TEST){
+		if(DEBUG_MODE){
 			try {
 				br = new BufferedReader(new FileReader(Paths.get(System.getProperty("user.dir"), "tests", "test1.txt").toFile()));
 			} catch (FileNotFoundException e1) {
@@ -100,7 +102,7 @@ public class VoyAirBooking {
 		}
 		VoyAirBooking vab;
 		try {
-			vab = new VoyAirBooking();
+			vab = new VoyAirBooking(DEBUG_MODE);
 			if(arguments.contains("-t") || arguments.contains("--text-only")){
 				if(arguments.contains("-r") || arguments.contains("--reset")){
 					vab.vabTools.sqld.drop_all();
@@ -117,7 +119,7 @@ public class VoyAirBooking {
 					System.out.println("Do you need to look at the list of cities available?");
 
 					String need_list;
-					if(!TEST){
+					if(!DEBUG_MODE){
 						need_list = scanner.nextLine();
 
 					}else{
@@ -145,7 +147,7 @@ public class VoyAirBooking {
 					}
 					String departing_airport;
 					String arrival_airport;
-					if(!TEST){
+					if(!DEBUG_MODE){
 						System.out.println("Where are you departing from?");
 						departing_airport = scanner.nextLine();
 						System.out.println("Where are you going to?");
@@ -164,7 +166,7 @@ public class VoyAirBooking {
 					LocalTime arrivalTime;
 					int numTickets;
 					try{
-						if(!TEST){
+						if(!DEBUG_MODE){
 							System.out.println("When do you want to depart? Please use the format dd/MM/YYYY HH:mm");
 							String[] departureInput = scanner.nextLine().split(" ");
 							departureDate =  vab.vabTools.dtf.parseLocalDate(departureInput[0]);
@@ -192,9 +194,7 @@ public class VoyAirBooking {
 							System.out.println("How many tickets would you like to purchase? Please enter a positive integer");
 							numTickets = Integer.valueOf(br.readLine());
 						}
-						//System.out.println("Going from Kelowna to Campbell River");
 						ArrayList<ArrayList<ArrayList<String>>> route_results = vab.vabTools.get_routes(departing_airport, arrival_airport);
-						//ArrayList<ArrayList<ArrayList<String>>> res = vab.vabTools.get_routes("Kelowna", "Campbell River");
 						/*
 						 * HashMap: Route row
 						 * ArrayList: Leg Options
@@ -203,15 +203,15 @@ public class VoyAirBooking {
 						 */
 						ArrayList<ArrayList<ArrayList<HashMap<String, String>>>> trimmed_flights = vab.vabTools.trim_routes(route_results, arrivalDate, departureDate, arrivalTime, departureTime, numTickets);
 						for(int i = 0; i < trimmed_flights.size(); i++){
-							System.out.println(i+1 + ") ");
 							for(ArrayList<HashMap<String, String>> flight_leg: trimmed_flights.get(i)){
-								System.out.println("Options for the flight from " + flight_leg.get(0).get("departure_city_name") + " to " + flight_leg.get(0).get("destination_city_name") + ": ");
+								System.out.println("\n\nOptions for the flight from " + flight_leg.get(0).get("departure_city_name") + " to " + flight_leg.get(0).get("destination_city_name") + ": ");
 
 								for(HashMap<String, String> route: flight_leg){
-									for (String key : route.keySet()) {
-									    System.out.println("\t" + key + " " + route.get(key));
+									SortedSet<String> keys = new TreeSet<String>(route.keySet());
+									for (String key : keys) { 
+										System.out.printf("%-60s %-10s\n", key, route.get(key));
 									}
-									System.out.println("\n\n");
+									System.out.println("\n");
 								}
 							}
 						}
