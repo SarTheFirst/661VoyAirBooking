@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -28,12 +29,13 @@ import voyairbooking.Graph.Edge;
 public class VoyAirTools {
 	private String user_id;
 	protected SQL_Driver sqld;
-	
+	protected Utils util;
 	protected DateTimeFormatter fmt = DateTimeFormat.forPattern("HH:mm");
 	protected DateTimeFormatter dtf = DateTimeFormat.forPattern("MM/dd/yyyy");
 	public VoyAirTools(boolean debugMode){
 		try {
 			this.sqld = new SQL_Driver(debugMode);
+			this.util = new Utils();
 			this.setUser_id("-1");
 		} catch (SQLException ex) {
 			System.err.println("Failed to initate VoyAirBooking. Please try again later.");
@@ -42,20 +44,19 @@ public class VoyAirTools {
 	}
 	public ArrayList<String> get_cities(){
 		try {
-			ArrayList<HashMap<String, String>> res = this.sqld.select("airport", "airport_city", "", true);
+			ArrayList<HashMap<String, String>> res = this.sqld.select("airport", "airport_city", "", "ORDER BY airport_city", true);
 			ArrayList<String> toReturn = get_field(res, "airport_city");
-			Collections.sort(toReturn, String.CASE_INSENSITIVE_ORDER);
 			return toReturn;
 		} catch (SQLException e) {
 			return null;
 		}
 	}
 	private ArrayList<String> get_field(ArrayList<HashMap<String, String>> result, String field){
-		HashSet<String> toReturn = new HashSet<String>();
+		ArrayList<String> toReturn = new ArrayList<String>();
 		for(HashMap<String, String> row : result){
 			toReturn.add(row.get(field));
 		}
-		return new ArrayList<String>(toReturn);
+		return toReturn;
 	}
 
 	public ArrayList<ArrayList<ArrayList<String>>> get_routes(String start_city, String end_city){
@@ -106,20 +107,16 @@ public class VoyAirTools {
 				ArrayList<ArrayList<HashMap<String, String>>> route_leg = new ArrayList<ArrayList<HashMap<String, String>>>();
 				for(ArrayList<String> flight: aRoute){
 					ArrayList<HashMap<String, String>> route_details = this.sqld.select("route", "*", "route_id IN " + flight.toString().replaceAll("\\[", "(").replaceAll("\\]",")")) ;
-                    
-                    // CALCULATE numAvailableSeats HERE BY READING num_total_seats AND num_reserved_seats FROM THE route TABLE
-                    // So, numAvailableSeats = num_total_seats - num_reserved_seats
-                    
-                    // ONCE THE PASSENGER SELECTS A SPECIFIC ROUTE, num_reserved_seats FOR THAT ROUTE MUST BE UPDATED
-                    // SO, num_reserved_seats += numTickets
-                    // WOULD NEED A SEPARATE FUNCTION FOR THIS
-                    
+
+
 					ArrayList<HashMap<String, String>> time_working_flights = new ArrayList<HashMap<String, String>>();
+					boolean first_pass = true;
+
 					for(HashMap<String, String> row: route_details){
-						boolean first_pass = true;
 						LocalDate date = this.dtf.parseLocalDate(row.get("date"));
 						LocalTime time = this.fmt.parseLocalTime(row.get("time"));
-						if(takeoffDate.isBefore(date) || (takeoffDate.isEqual(date) && !takeoffTime.isBefore(time))){
+						if(numTickets + Integer.valueOf(row.get("num_reserved_seats")) <= Integer.valueOf(row.get("num_total_seats"))
+								&& ( takeoffDate.isBefore(date) || (takeoffDate.isEqual(date) && !takeoffTime.isBefore(time)))){
 							if(first_pass){
 								HashMap<String, String> dep_airport_data = this.sqld.select_first("airport", "*",  "airport_id=" + row.get("departure_airport_id"));
 								HashMap<String, String> dest_airport_data = this.sqld.select_first("airport", "*", "airport_id="+ row.get("destination_airport_id"));
@@ -128,7 +125,7 @@ public class VoyAirTools {
 								first_pass = false;
 							}
 							time_working_flights.add(row);
-							
+
 						}
 					}
 					route_leg.add(time_working_flights);
@@ -146,24 +143,34 @@ public class VoyAirTools {
 	public boolean save_route(String route_id, String user_id){
 		HashMap<String, String> fields = new HashMap<String, String>();
 		fields.put("route_id",  route_id);
-		fields.put("account_id", user_id);
+		fields.put("passenger_id", user_id);
 		return this.sqld.insert("transaction", fields);
 	}
 
 	public boolean register(String username, String password){
 		try {
-			MessageDigest md = MessageDigest.getInstance("SHA-256");
+			MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+			messageDigest.update(password.getBytes());
+			String encryptedPassword = new String(messageDigest.digest());
+
 			Map<String, String> toInsert = new HashMap<String, String>();
 			toInsert.put("username", username);
-			toInsert.put("password", md.digest(password.getBytes()).toString());
-			if(this.sqld.insert("account", toInsert)){
+			toInsert.put("password", encryptedPassword);
+			Scanner scanner = new Scanner(System.in);
+			System.out.println("What's the name to associate with this account? (First and last only)");
+			String[] name = scanner.nextLine().split(" ");
+			toInsert.put("first_name", name[0]);
+			toInsert.put("last_name", name[1]);
+			String email = this.util.getValidEmail(scanner,"What is the email address that can be associated with this account?");
+			toInsert.put("email", email);
+			if(this.sqld.insert("passenger", toInsert)){
 				System.out.println("Failed to register account.");
 				return false;
 			}
 			else{
 				System.out.println("Account registration was successful!");
 				try {
-					this.setUser_id(this.sqld.count_rows("account"));
+					this.setUser_id(this.sqld.count_rows("passenger"));
 					return true;
 
 				} catch (SQLException e) {
@@ -182,16 +189,22 @@ public class VoyAirTools {
 	}
 	public boolean tryLoggingIn(String username, String password){
 		try {
-			MessageDigest md = MessageDigest.getInstance("SHA-256");
-			HashMap<String, String> res = this.sqld.select_first("accounts", "*", "username=" + username);
-			if(res.isEmpty()){
+			MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+
+			HashMap<String, String> res;
+			try{
+				res = this.sqld.select_first("passenger", "*", "username=" + username);
+			}catch(IndexOutOfBoundsException e){
 				System.out.println("No user by the username " + username + ".");
-				System.out.println("Registering them now.");
+				System.out.println("Registering "+ username +" now.");
 				return register(username, password);
 			}
-			if(res.get("password").equals(md.digest(password.getBytes()))){
+			messageDigest.update(password.getBytes());
+			String encryptedPassword = new String(messageDigest.digest());
+
+			if(res.get("password").equals(encryptedPassword)){
 				System.out.println("Welcome back, " + username + "!");
-				this.setUser_id(res.get("account_id"));
+				this.setUser_id(res.get("passenger_id"));
 				return true;
 			}
 			else{

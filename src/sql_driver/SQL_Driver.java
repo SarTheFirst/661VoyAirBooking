@@ -109,6 +109,10 @@ public class SQL_Driver {
 	public ArrayList<HashMap<String, String>> select(String table_name, String select, String where, boolean distinct) throws SQLException{
 		return select(table_name,  Arrays.asList(select.split("\\s*,\\s*")), where, "", distinct);
 	}
+	public ArrayList<HashMap<String, String>> select(String table_name, String select, String where, String other,
+			boolean distinct) throws SQLException {
+		return select(table_name,  Arrays.asList(select.split("\\s*,\\s*")), where, other, distinct);
+	}
 
 	public ArrayList<HashMap<String, String>> select(String table_name, List<String> select, String where, String other, boolean distinct) throws SQLException{
 
@@ -121,7 +125,7 @@ public class SQL_Driver {
 			sql += " WHERE " + fixWhere(where);
 		}
 		if(!other.isEmpty()){
-			sql += other;
+			sql += " " +other;
 		}
 		ResultSet rs = executeQuery(sql);
 		return parseResultSet(rs, select);
@@ -325,7 +329,7 @@ public class SQL_Driver {
 		for(int i = 0; i < res.length; i++){
 			if(!newWhere.isEmpty()){
 				newWhere += allMatches.get(counter++);
-				newWhere += " '" + res[i].trim()+"'";
+				newWhere += "'" + res[i].trim()+"'";
 			}
 			else{
 				newWhere += res[i];

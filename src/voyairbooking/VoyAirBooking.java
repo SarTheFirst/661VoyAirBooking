@@ -21,10 +21,8 @@ import org.joda.time.LocalTime;
 
 public class VoyAirBooking {
 	public VoyAirTools vabTools;
-	public Utils util;
 	public VoyAirBooking(boolean debug){
 		this.vabTools = new VoyAirTools(debug);
-		this.util = new Utils();
 	}
 	public void readInData(File f){
 		try {
@@ -33,7 +31,7 @@ public class VoyAirBooking {
 				tableName = this.vabTools.sqld.replaceStringEnding(tableName, "");
 			}
 			Scanner scanner = new Scanner(f);
-			List<String> headers = this.util.parseLine(scanner.nextLine());
+			List<String> headers = this.vabTools.util.parseLine(scanner.nextLine());
 			HashMap<String, String> fields = new HashMap<String, String>();
 			for(int i = 0; i < headers.size(); i++){
 				String fname = headers.get(i).toLowerCase().replace(" ", "_");
@@ -53,12 +51,17 @@ public class VoyAirBooking {
 			}
 			this.vabTools.sqld.create_table(tableName, fields);
 
-			if(this.vabTools.sqld.count_rows(tableName)+1 != this.util.countLines(f.toString())){
+			if(this.vabTools.sqld.count_rows(tableName)+1 != this.vabTools.util.countLines(f.toString())){
 				ArrayList<Map<String, String>> rows = new ArrayList<Map<String, String>>();
 				while(scanner.hasNext()){
 					HashMap<String, String> entries = new HashMap<String, String>();
-					List<String> line = this.util.parseLine(scanner.nextLine());
+					List<String> line = this.vabTools.util.parseLine(scanner.nextLine());
 					for(int i = 0; i < headers.size(); i++){
+						// Honestly? Not sure why this happens. But sometimes a leading " occurs.
+						// #Don'tUseOpenSourceCodeWithoutComments
+						if(line.get(i).startsWith("\"") && !line.get(i).endsWith("\"")){
+							line.set(i, line.get(i).substring(1));
+						}
 						entries.put(headers.get(i), line.get(i));
 					}
 					rows.add(entries);
@@ -116,109 +119,130 @@ public class VoyAirBooking {
 					System.out.println("-h [--help] displays this help text.");
 				}
 				else{
-					System.out.println("Do you need to look at the list of cities available?");
-
-					String need_list;
+					boolean successful_login;
+					String username, password;
 					if(!DEBUG_MODE){
-						need_list = scanner.nextLine();
-
-					}else{
-						need_list = br.readLine();
-
-					}
-					if(need_list.equalsIgnoreCase("y") || need_list.equalsIgnoreCase("yes")){
-						ArrayList<String> city_list = vab.vabTools.get_cities();
-						System.out.println("The cities will be displayed in groups of 20.");
-						int city_counter = 0;
-						boolean keepListingCities = true;
-						do{
-							int i = city_counter;
-							while(i < city_counter + 20){
-								if(i < city_list.size()){
-									System.out.println(city_list.get(i));
-								}
-								i++;
-							}
-							city_counter = i;
-							System.out.println("Keep listing cities? (Y/n)");
-							need_list = scanner.nextLine();
-							keepListingCities = need_list.equalsIgnoreCase("y") || need_list.equalsIgnoreCase("yes");
-						}while(keepListingCities);
-					}
-					String departing_airport;
-					String arrival_airport;
-					if(!DEBUG_MODE){
-						System.out.println("Where are you departing from?");
-						departing_airport = scanner.nextLine();
-						System.out.println("Where are you going to?");
-						arrival_airport = scanner.nextLine();
+						System.out.println("What is the username you will be using today?");
+						username = scanner.nextLine();
+						System.out.println("What's your password, " + username + "?");
+						password = scanner.nextLine();
+						successful_login = vab.vabTools.tryLoggingIn(username, password);
 					}
 					else{
-						System.out.println("Where are you departing from?");
-						departing_airport = br.readLine();
-						System.out.println("Where are you going to?");
-						arrival_airport = br.readLine();
+						System.out.println("What is the username you will be using today?");
+						username = br.readLine();
+						System.out.println("What's your password, " + username + "?");
+						password = br.readLine();
+						successful_login = vab.vabTools.tryLoggingIn(username, password);
 					}
-
-					LocalDate departureDate;
-					LocalTime departureTime;
-					LocalDate arrivalDate;
-					LocalTime arrivalTime;
-					int numTickets;
-					try{
+					if(successful_login){
+						String need_list;
 						if(!DEBUG_MODE){
-							System.out.println("When do you want to depart? Please use the format dd/MM/YYYY HH:mm");
-							String[] departureInput = scanner.nextLine().split(" ");
-							departureDate =  vab.vabTools.dtf.parseLocalDate(departureInput[0]);
-							departureTime =  vab.vabTools.fmt.parseLocalTime(departureInput[1]);
+							need_list = vab.vabTools.util.getYesOrNo(scanner, "Do you need to look at the list of cities available?");
 
-							System.out.println("When do you want to arrive? Please use the format dd/MM/YYYY HH:mm");
-							String[] arrivalInput = scanner.nextLine().split(" ");
-							arrivalDate = vab.vabTools.dtf.parseLocalDate(arrivalInput[0]);
-							arrivalTime = vab.vabTools.fmt.parseLocalTime(arrivalInput[1]);
+						}else{
+							System.out.println("Do you need to look at the list of cities available?");
+							need_list = br.readLine();
 
-							String prompt = "How many tickets would you like to purchase? Please enter a positive integer";
-							numTickets = vab.util.getPositiveNumber(scanner, prompt);
+						}
+						if(need_list.equalsIgnoreCase("y") || need_list.equalsIgnoreCase("yes")){
+							ArrayList<String> city_list = vab.vabTools.get_cities();
+							System.out.println("The cities will be displayed in groups of 20.");
+							int city_counter = 0;
+							boolean keepListingCities = true;
+							do{
+								int i = city_counter;
+								while(i < city_counter + 20){
+									if(i < city_list.size()){
+										System.out.println(city_list.get(i));
+									}
+									i++;
+								}
+								city_counter = i;
+								System.out.println("Keep listing cities? (Y/n)");
+								need_list = scanner.nextLine();
+								keepListingCities = need_list.equalsIgnoreCase("y") || need_list.equalsIgnoreCase("yes");
+							}while(keepListingCities);
+						}
+						String departing_airport, arrival_airport;
+						if(!DEBUG_MODE){
+							System.out.println("Where are you departing from?");
+							departing_airport = scanner.nextLine();
+							System.out.println("Where are you going to?");
+							arrival_airport = scanner.nextLine();
 						}
 						else{
-							System.out.println("When do you want to depart? Please use the format dd/MM/YYYY HH:mm");
-							String[] departureInput = br.readLine().split(" ");
-							departureDate =  vab.vabTools.dtf.parseLocalDate(departureInput[0]);
-							departureTime =  vab.vabTools.fmt.parseLocalTime(departureInput[1]);
-
-							System.out.println("When do you want to arrive? Please use the format dd/MM/YYYY HH:mm");
-							String[] arrivalInput = br.readLine().split(" ");
-							arrivalDate = vab.vabTools.dtf.parseLocalDate(arrivalInput[0]);
-							arrivalTime = vab.vabTools.fmt.parseLocalTime(arrivalInput[1]);
-
-							System.out.println("How many tickets would you like to purchase? Please enter a positive integer");
-							numTickets = Integer.valueOf(br.readLine());
+							System.out.println("Where are you departing from?");
+							departing_airport = br.readLine();
+							System.out.println("Where are you going to?");
+							arrival_airport = br.readLine();
 						}
-						ArrayList<ArrayList<ArrayList<String>>> route_results = vab.vabTools.get_routes(departing_airport, arrival_airport);
-						/*
-						 * HashMap: Route row
-						 * ArrayList: Leg Options
-						 * ArrayList: Flight Leg
-						 * ArrayList: Flight Options
-						 */
-						ArrayList<ArrayList<ArrayList<HashMap<String, String>>>> trimmed_flights = vab.vabTools.trim_routes(route_results, arrivalDate, departureDate, arrivalTime, departureTime, numTickets);
-						for(int i = 0; i < trimmed_flights.size(); i++){
-							for(ArrayList<HashMap<String, String>> flight_leg: trimmed_flights.get(i)){
-								System.out.println("\n\nOptions for the flight from " + flight_leg.get(0).get("departure_city_name") + " to " + flight_leg.get(0).get("destination_city_name") + ": ");
 
-								for(HashMap<String, String> route: flight_leg){
-									SortedSet<String> keys = new TreeSet<String>(route.keySet());
-									for (String key : keys) { 
-										System.out.printf("%-60s %-10s\n", key, route.get(key));
+						LocalDate departureDate, arrivalDate;
+						LocalTime departureTime, arrivalTime;
+						int numTickets;
+						try{
+							if(!DEBUG_MODE){
+								System.out.println("When do you want to depart? Please use the format dd/MM/YYYY HH:mm");
+								String[] departureInput = scanner.nextLine().split(" ");
+								departureDate =  vab.vabTools.dtf.parseLocalDate(departureInput[0]);
+								departureTime =  vab.vabTools.fmt.parseLocalTime(departureInput[1]);
+
+								System.out.println("When do you want to arrive? Please use the format dd/MM/YYYY HH:mm");
+								String[] arrivalInput = scanner.nextLine().split(" ");
+								arrivalDate = vab.vabTools.dtf.parseLocalDate(arrivalInput[0]);
+								arrivalTime = vab.vabTools.fmt.parseLocalTime(arrivalInput[1]);
+
+								String prompt = "How many tickets would you like to purchase? Please enter a positive integer";
+								numTickets = vab.vabTools.util.getPositiveNumber(scanner, prompt);
+							}
+							else{
+								System.out.println("When do you want to depart? Please use the format dd/MM/YYYY HH:mm");
+								String[] departureInput = br.readLine().split(" ");
+								departureDate =  vab.vabTools.dtf.parseLocalDate(departureInput[0]);
+								departureTime =  vab.vabTools.fmt.parseLocalTime(departureInput[1]);
+
+								System.out.println("When do you want to arrive? Please use the format dd/MM/YYYY HH:mm");
+								String[] arrivalInput = br.readLine().split(" ");
+								arrivalDate = vab.vabTools.dtf.parseLocalDate(arrivalInput[0]);
+								arrivalTime = vab.vabTools.fmt.parseLocalTime(arrivalInput[1]);
+
+								System.out.println("How many tickets would you like to purchase? Please enter a positive integer");
+								numTickets = Integer.valueOf(br.readLine());
+							}
+							ArrayList<ArrayList<ArrayList<String>>> route_results = vab.vabTools.get_routes(departing_airport, arrival_airport);
+							/*
+							 * HashMap: Route row
+							 * ArrayList: Leg Options
+							 * ArrayList: Flight Leg
+							 * ArrayList: Flight Options
+							 */
+							// HAHAHA NOPE.
+							ArrayList<ArrayList<ArrayList<HashMap<String, String>>>> trimmed_flights = vab.vabTools.trim_routes(route_results, arrivalDate, departureDate, arrivalTime, departureTime, numTickets);
+							for(int i = 0; i < trimmed_flights.size(); i++){
+								for(ArrayList<HashMap<String, String>> flight_leg: trimmed_flights.get(i)){
+									System.out.println("\n\nOptions for the flight from " + flight_leg.get(0).get("departure_city_name") + " to " + flight_leg.get(0).get("destination_city_name") + ": ");
+
+									for(HashMap<String, String> route: flight_leg){
+										SortedSet<String> keys = new TreeSet<String>(route.keySet());
+										for (String key : keys) { 
+											System.out.printf("%-60s %-10s\n", key, route.get(key));
+										}
+										System.out.println("\n");
 									}
-									System.out.println("\n");
 								}
 							}
 						}
-					}
 
-					catch(IllegalArgumentException e){
-						System.err.println("Invalid date input! Relaunch the program and adhere to the the format provided.");
+
+						catch(IllegalArgumentException e){
+							System.err.println("Invalid date input! Relaunch the program and adhere to the the format provided.");
+							System.exit(0);
+						}
+					}
+					else{
+						System.err.println("You failed to log in.");
+						System.err.println("You must login to use VoyAirBooking.");
 						System.exit(0);
 					}
 				}
