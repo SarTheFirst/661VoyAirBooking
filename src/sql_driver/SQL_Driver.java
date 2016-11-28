@@ -274,16 +274,9 @@ public class SQL_Driver {
 			sql += sqlProof(entry.getKey()) + " = " + sqlProof(entry.getValue()) + ",";
 		}
 		sql = replaceStringEnding(sql, "");
-		if(!where.contains("='") || !where.contains("= '")){
-			String newWhere = "";
-			for(String splits : where.split(",")){
-				String[] res = splits.split("=");
-				newWhere += res[0].trim().replace("'", "") + "= '" + res[1].trim().replace("'", "") + "'";
-			}
-			where = newWhere;
-		}
-		sql += " WHERE " + where;
-		return this.execute(sql);
+		if(!where.isEmpty()){
+			sql += " WHERE " + fixWhere(where);
+		}		return this.execute(sql);
 	}
 	public boolean truncate(String table_name){
 		// Vaccum is memory clean up or something since sqlite doesn't have a truncate.

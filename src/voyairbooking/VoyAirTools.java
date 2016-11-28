@@ -166,6 +166,43 @@ public class VoyAirTools {
 		}
 		return false;
 	}
+	public boolean rebookFlight(String route_id, String numTickets) {
+		HashMap<String, String> update_to = new HashMap<String, String>();
+		update_to.put("cancelled", "0");
+		update_to.put("numTickets", numTickets);
+		if(!this.sqld.update("reservation", update_to, "route_id="+ route_id + " AND passenger_id="+this.user_id)){
+			HashMap<String, String> route_res;
+			try {
+				route_res = this.sqld.select_first("route", "num_reserved_seats", "route_id="+route_id);
+				update_to.clear();
+				update_to.put("num_reserved_seats", String.valueOf(Integer.valueOf(route_res.get("num_reserved_seats")) + Integer.valueOf(numTickets)));
+				return !(this.sqld.update("route", update_to, "route_id="+route_id));
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
+		return false;
+	}
+	public boolean cancelFlight(String route_id, String ticketAmnt){
+		HashMap<String, String> update_to = new HashMap<String, String>();
+		update_to.put("cancelled", "1");
+		if(!this.sqld.update("reservation", update_to, "route_id="+ route_id + " AND passenger_id="+this.user_id)){
+			HashMap<String, String> route_res;
+			try {
+				route_res = this.sqld.select_first("route", "num_reserved_seats", "route_id="+route_id);
+				update_to.clear();
+				update_to.put("num_reserved_seats", String.valueOf(Integer.valueOf(route_res.get("num_reserved_seats")) - Integer.valueOf(ticketAmnt)));
+				return !(this.sqld.update("route", update_to, "route_id="+route_id));
+
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return false;
+	}
+
 
 	public boolean add_seats(String route_id, int numTickets, int already_reserved){
 		HashMap<String, String> update_to = new HashMap<String, String>();
@@ -189,7 +226,7 @@ public class VoyAirTools {
 			try {
 				HashMap<String, String> route_res = this.sqld.select_first("route", "num_reserved_seats", "route_id="+route_id);
 				update_to.clear();
-				update_to.put("num_reserved_seats", String.valueOf(Integer.valueOf(route_res.get("num_reserved_seats"))+ numTickets));
+				update_to.put("num_reserved_seats", String.valueOf(Integer.valueOf(route_res.get("num_reserved_seats"))- numTickets));
 				return !(this.sqld.update("route", update_to, "route_id="+route_id));
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -197,6 +234,7 @@ public class VoyAirTools {
 		}
 		return false;
 	}
+
 
 	public ArrayList<HashMap<String, String>> display_reserved_flights(){
 		try {
@@ -214,7 +252,6 @@ public class VoyAirTools {
 		}
 		return null;
 	}
-
 
 	public boolean register(String username, String password){
 		try {
@@ -296,4 +333,5 @@ public class VoyAirTools {
 	public void setUser_id(String user_id) {
 		this.user_id = user_id;
 	}
+
 }

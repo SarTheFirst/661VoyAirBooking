@@ -118,8 +118,14 @@ public class VoyAirBooking {
 	public void previous_flight_info(){
 		ArrayList<HashMap<String, String>> reserved_flights = this.vabTools.display_reserved_flights();
 		for(HashMap<String, String> flight:reserved_flights){
-			System.out.format("Flight number %s is departing from %s on %s.\nYou've reserved %s tickets at %s each.\n", 
-					flight.get("route_id"), flight.get("airport_name"), this.vabTools.print_datetime.print(this.vabTools.sql_formatter.parseLocalDate((flight.get("date")))), flight.get("numTickets"), flight.get("price"));
+			if(flight.get("cancelled").equals("0")){
+				System.out.format("Flight number %s is departing from %s on %s.\nYou've reserved %s tickets at %s each.\n", 
+						flight.get("route_id"), flight.get("airport_name"), this.vabTools.print_datetime.print(this.vabTools.sql_formatter.parseLocalDate((flight.get("date")))), flight.get("numTickets"), flight.get("price"));
+			}
+			else{
+				System.out.format("You have CANCELLED flight number %s that was departing from %s on %s.\nYou had reserved %s tickets at %s each.\n", 
+						flight.get("route_id"), flight.get("airport_name"), this.vabTools.print_datetime.print(this.vabTools.sql_formatter.parseLocalDate((flight.get("date")))), flight.get("numTickets"), flight.get("price"));
+			}
 		}
 	}
 	public static void main(String[] args) {
@@ -317,6 +323,7 @@ public class VoyAirBooking {
 							 */
 							// HAHAHA NOPE.
 							ArrayList<ArrayList<ArrayList<HashMap<String, String>>>> trimmed_flights = vab.vabTools.trim_routes(route_results, arrivalDate, departureDate, arrivalTime, departureTime, numTickets);
+							
 							for(int i = 0; i < trimmed_flights.size(); i++){
 								for(ArrayList<HashMap<String, String>> flight_leg: trimmed_flights.get(i)){
 									System.out.println("\n\nOptions for the flight from " + flight_leg.get(0).get("departure_city_name") + " to " + flight_leg.get(0).get("destination_city_name") + ": ");
@@ -357,15 +364,20 @@ public class VoyAirBooking {
 								}
 							}
 
+							System.out.println("Did you want to make this a round trip? (Y)es/(No)");
+							String round_trip;
+							if(DEBUG_MODE) round_trip = br.readLine();
+							else round_trip = scanner.nextLine();
+							//TODO: Round trip
+							
 							break;
 						case 5:
 							vab.previous_flight_info();
 							break;
-							//System.out.println("6) Edit flight reservation information.");
-							//System.out.println("7) Edit profile information."); 
 
 						case 6:
 							vab.previous_flight_info();
+
 							ArrayList<HashMap<String, String>> reserved_flights = vab.vabTools.display_reserved_flights();
 							System.out.println("Which flight do you want to change?");
 							HashMap<String, String> target_flight = new HashMap<String, String>();
@@ -380,9 +392,10 @@ public class VoyAirBooking {
 										keep_going = false;
 										target_flight = flight;
 									}
-									else{
-										System.out.println("You haven't reserved seats on flight " + flight_number);
-									}
+
+								}
+								if(keep_going){
+									System.out.println("You haven't reserved seats on flight " + flight_number);
 								}
 							}while(keep_going);
 
@@ -393,10 +406,11 @@ public class VoyAirBooking {
 								System.out.println("A) Add Seats");
 								System.out.println("R) Remove Seats");
 								System.out.println("C) Cancel Flight");
+								System.out.println("C) Re-book a cancelled flight.");
 								if(DEBUG_MODE) action = br.readLine();
 								else action = scanner.nextLine();
 
-								if(Arrays.asList(("a,r,c".split(","))).contains(action.toLowerCase())){
+								if(Arrays.asList(("a,r,c,b".split(","))).contains(action.toLowerCase())){
 									keep_going = false;
 								}
 								else{
@@ -406,7 +420,9 @@ public class VoyAirBooking {
 								case "a":
 									seat_amount = 0;
 									System.out.println("How many seats do you want to add to your reservation?");
-									if(DEBUG_MODE) seat_amount = Integer.valueOf(br.readLine());
+									if(DEBUG_MODE){
+										seat_amount = Integer.valueOf(br.readLine());
+									}
 									else{
 										keep_going = true;
 										while(keep_going){
@@ -418,7 +434,7 @@ public class VoyAirBooking {
 											}
 										}
 									}
-									vab.vabTools.add_seats(flight_number, seat_amount, Integer.parseInt(target_flight.get("numtickets")));
+									vab.vabTools.add_seats(flight_number, seat_amount, Integer.parseInt(target_flight.get("numTickets")));
 									break;
 								case "r":
 									seat_amount = 0;
@@ -429,19 +445,31 @@ public class VoyAirBooking {
 										while(keep_going){
 											try{
 												seat_amount = scanner.nextInt();
-												keep_going = false;
-											}catch(InputMismatchException e){
+												if(Integer.parseInt(target_flight.get("numTickets")) < seat_amount){
+													System.out.println("You can't subtract more tickets than you have reserved.");
+													System.out.println("You reserved "+ target_flight.get("numTickets") + " tickets.");
+												}
 
+												else{ 
+													keep_going = false;
+												}
+											}catch(InputMismatchException e){
+												System.out.println("You need to enter an Integer number");
 											}
 										}
 									}
-									//TODO: make sure that the amount subtracted isn't greater than what they got.
-									vab.vabTools.remove_seats(flight_number, seat_amount, Integer.parseInt(target_flight.get("numtickets")));
-
+									vab.vabTools.remove_seats(flight_number, seat_amount, Integer.parseInt(target_flight.get("numTickets")));
 									break;
 
 								case "c":
+									if(vab.vabTools.cancelFlight(flight_number, target_flight.get("numTickets"))){
+										System.out.println("Flight cancelled successfully.");
+									}
 									break;
+								case "b":
+									if(vab.vabTools.rebookFlight(flight_number, target_flight.get("numTickets"))){
+										System.out.println("Flight rebooked successfully.");
+									}
 								}
 							}while(keep_going);
 							break;
