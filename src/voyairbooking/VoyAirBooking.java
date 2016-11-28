@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -22,8 +24,10 @@ import org.joda.time.LocalTime;
 
 public class VoyAirBooking {
 	public VoyAirTools vabTools;
+	public Utils util;
 	public VoyAirBooking(boolean debug){
 		this.vabTools = new VoyAirTools(debug);
+		this.util = new Utils();
 	}
 	public void readInData(File f){
 		try {
@@ -32,7 +36,7 @@ public class VoyAirBooking {
 				tableName = this.vabTools.sqld.replaceStringEnding(tableName, "");
 			}
 			Scanner scanner = new Scanner(f);
-			List<String> headers = this.vabTools.util.parseLine(scanner.nextLine());
+			List<String> headers = this.util.parseLine(scanner.nextLine());
 			HashMap<String, String> fields = new HashMap<String, String>();
 			for(int i = 0; i < headers.size(); i++){
 				String fname = headers.get(i).toLowerCase().replace(" ", "_");
@@ -56,11 +60,11 @@ public class VoyAirBooking {
 			}
 			this.vabTools.sqld.create_table(tableName, fields);
 
-			if(this.vabTools.sqld.count_rows(tableName)+1 != this.vabTools.util.countLines(f.toString())){
+			if(this.vabTools.sqld.count_rows(tableName)+1 != this.util.countLines(f.toString())){
 				ArrayList<Map<String, String>> rows = new ArrayList<Map<String, String>>();
 				while(scanner.hasNext()){
 					HashMap<String, String> entries = new HashMap<String, String>();
-					List<String> line = this.vabTools.util.parseLine(scanner.nextLine());
+					List<String> line = this.util.parseLine(scanner.nextLine());
 					for(int i = 0; i < headers.size(); i++){
 						// Honestly? Not sure why this happens. But sometimes a leading " occurs.
 						// #Don'tUseOpenSourceCodeWithoutComments
@@ -90,7 +94,33 @@ public class VoyAirBooking {
 				}
 			}
 		}
-		System.out.println("Done.");
+		System.out.println("Finished processing files.");
+	}
+	public void printMenu(){
+		System.out.println("0) Exit."); 
+		if(!this.vabTools.is_logged_in())
+			System.out.println("1) Log in");
+		else
+			System.out.println("1) Log out");
+		System.out.println("2) Look at available cities.");
+		System.out.println("3) Look at airline details.");
+
+		if(!this.vabTools.is_logged_in()){
+			System.out.println("4) Book a flight.");
+			System.out.println("5) Look at previously booked flight information.");
+			System.out.println("6) Edit flight reservation information.");
+			System.out.println("7) Edit profile information."); 
+		}
+		System.out.println("What is your choice?");
+
+
+	}
+	public void previous_flight_info(){
+		ArrayList<HashMap<String, String>> reserved_flights = this.vabTools.display_reserved_flights();
+		for(HashMap<String, String> flight:reserved_flights){
+			System.out.format("Flight number %s is departing from %s on %s.\nYou've reserved %s tickets at %s each.\n", 
+					flight.get("route_id"), flight.get("airport_name"), this.vabTools.print_datetime.print(this.vabTools.sql_formatter.parseLocalDate((flight.get("date")))), flight.get("numTickets"), flight.get("price"));
+		}
 	}
 	public static void main(String[] args) {
 		boolean DEBUG_MODE = true;
@@ -123,33 +153,71 @@ public class VoyAirBooking {
 					System.out.println("-h [--help] displays this help text.");
 				}
 				else{
-					boolean successful_login;
-					String username, password;
-					if(!DEBUG_MODE){
-						System.out.println("What is the username you will be using today?");
-						username = scanner.nextLine();
-						System.out.println("What's your password, " + username + "?");
-						password = scanner.nextLine();
-						successful_login = vab.vabTools.tryLoggingIn(username, password);
-					}
-					else{
-						System.out.println("What is the username you will be using today?");
-						username = br.readLine();
-						System.out.println("What's your password, " + username + "?");
-						password = br.readLine();
-						successful_login = vab.vabTools.tryLoggingIn(username, password);
-					}
-					if(successful_login){
-						String need_list;
+					int menu_choice;
+					do{
 						if(!DEBUG_MODE){
-							need_list = vab.vabTools.util.getYesOrNo(scanner, "Do you need to look at the list of cities available?");
-
-						}else{
-							System.out.println("Do you need to look at the list of cities available?");
-							need_list = br.readLine();
-
+							if(vab.vabTools.is_logged_in()){
+								do{
+									vab.printMenu();
+									menu_choice = scanner.nextInt();
+								}while(vab.util.getValidInRange(0, 7, menu_choice));
+							}
+							else{
+								do{
+									vab.printMenu();
+									menu_choice = scanner.nextInt();
+								}while(vab.util.getValidInRange(0, 3, menu_choice));
+							}
 						}
-						if(need_list.equalsIgnoreCase("y") || need_list.equalsIgnoreCase("yes")){
+						else{
+							if(!vab.vabTools.is_logged_in()){
+								do{
+									vab.printMenu();
+									menu_choice = Integer.valueOf(br.readLine());
+								}while(vab.util.getValidInRange(0, 7, menu_choice));
+							}
+							else{
+								do{
+									vab.printMenu();
+									menu_choice = Integer.valueOf(br.readLine());
+								}while(vab.util.getValidInRange(0, 3, menu_choice));
+							}
+						}
+
+						switch(menu_choice){
+						case 0:
+							System.out.println("Thank you for using VonAirBooking!");
+							System.exit(0);
+						case 1:
+							if(vab.vabTools.is_logged_in()){
+								String username, password;
+								if(!DEBUG_MODE){
+									System.out.println("What is the username you will be using today?");
+									username = scanner.nextLine();
+									System.out.println("What's your password, " + username + "?");
+									password = scanner.nextLine();
+								}
+								else{
+									System.out.println("What is the username you will be using today?");
+									username = br.readLine();
+									System.out.println("What's your password, " + username + "?");
+									password = br.readLine();
+
+								}
+								if(vab.vabTools.tryLoggingIn(username, password)){
+									System.out.println("Login succesful!");
+									System.out.println("Welcome back, " + username);
+								}
+								else{
+									System.out.println("Sorry you were not logged in correctly.");
+								}
+							}
+							else{
+								vab.vabTools.log_out();
+								System.out.println("Logged out successfully");
+							}
+							break;
+						case 2:
 							ArrayList<String> city_list = vab.vabTools.get_cities();
 							System.out.println("The cities will be displayed in groups of 20.");
 							int city_counter = 0;
@@ -164,41 +232,67 @@ public class VoyAirBooking {
 								}
 								city_counter = i;
 								System.out.println("Keep listing cities? (Y/n)");
-								need_list = scanner.nextLine();
+								String need_list = scanner.nextLine();
 								keepListingCities = need_list.equalsIgnoreCase("y") || need_list.equalsIgnoreCase("yes");
 							}while(keepListingCities);
-						}
-						String departing_airport, arrival_airport;
-						if(!DEBUG_MODE){
-							System.out.println("Where are you departing from?");
-							departing_airport = scanner.nextLine();
-							System.out.println("Where are you going to?");
-							arrival_airport = scanner.nextLine();
-						}
-						else{
-							System.out.println("Where are you departing from?");
-							departing_airport = br.readLine();
-							System.out.println("Where are you going to?");
-							arrival_airport = br.readLine();
-						}
+							break;
+						case 3:
+							ArrayList<HashMap<String, String>> airline_list = vab.vabTools.get_airline_info();
+							System.out.println("The arilines will be displayed in groups of 20.");
+							int airline_counter = 0;
+							boolean keep_listing_airlines = true;
+							do{
+								int i = airline_counter;
+								while(i < airline_counter + 20){
+									if(i < airline_list.size()){
+										System.out.printf("%s is located in %s\n", airline_list.get(i).get("airline_name"), airline_list.get(i).get("airline_country"));
+									}
+									i++;
+								}
+								airline_counter = i;
+								System.out.println("Keep listing cities? (Y/n)");
+								String need_list = scanner.nextLine();
+								keep_listing_airlines = need_list.equalsIgnoreCase("y") || need_list.equalsIgnoreCase("yes");
+							}while(keep_listing_airlines);
+							break;
 
-						LocalDate departureDate, arrivalDate;
-						LocalTime departureTime, arrivalTime;
-						int numTickets;
-						try{
+						case 4:
+							String departing_airport, arrival_airport;
 							if(!DEBUG_MODE){
-								System.out.println("When do you want to depart? Please use the format dd/MM/YYYY HH:mm");
-								String[] departureInput = scanner.nextLine().split(" ");
-								departureDate =  vab.vabTools.dtf.parseLocalDate(departureInput[0]);
-								departureTime =  vab.vabTools.fmt.parseLocalTime(departureInput[1]);
+								System.out.println("Where are you departing from?");
+								departing_airport = scanner.nextLine();
+								System.out.println("Where are you going to?");
+								arrival_airport = scanner.nextLine();
+							}
+							else{
+								System.out.println("Where are you departing from?");
+								departing_airport = br.readLine();
+								System.out.println("Where are you going to?");
+								arrival_airport = br.readLine();
+							}
 
-								System.out.println("When do you want to arrive? Please use the format dd/MM/YYYY HH:mm");
-								String[] arrivalInput = scanner.nextLine().split(" ");
-								arrivalDate = vab.vabTools.dtf.parseLocalDate(arrivalInput[0]);
-								arrivalTime = vab.vabTools.fmt.parseLocalTime(arrivalInput[1]);
+							LocalDate departureDate, arrivalDate;
+							LocalTime departureTime, arrivalTime;
+							int numTickets;
+							if(!DEBUG_MODE){
+								try{
+									System.out.println("When do you want to depart? Please use the format dd/MM/YYYY HH:mm");
+									String[] departureInput = scanner.nextLine().split(" ");
+									departureDate =  vab.vabTools.dtf.parseLocalDate(departureInput[0]);
+									departureTime =  vab.vabTools.fmt.parseLocalTime(departureInput[1]);
 
-								String prompt = "How many tickets would you like to purchase? Please enter a positive integer";
-								numTickets = vab.vabTools.util.getPositiveNumber(scanner, prompt);
+									System.out.println("When do you want to arrive? Please use the format dd/MM/YYYY HH:mm");
+									String[] arrivalInput = scanner.nextLine().split(" ");
+									arrivalDate = vab.vabTools.dtf.parseLocalDate(arrivalInput[0]);
+									arrivalTime = vab.vabTools.fmt.parseLocalTime(arrivalInput[1]);
+
+									String prompt = "How many tickets would you like to purchase? Please enter a positive integer";
+									numTickets = vab.vabTools.util.getPositiveNumber(scanner, prompt);
+								}
+								catch(IllegalArgumentException e){
+									System.err.println("Invalid date input!");
+									continue;
+								}
 							}
 							else{
 								System.out.println("When do you want to depart? Please use the format dd/MM/YYYY HH:mm");
@@ -258,25 +352,104 @@ public class VoyAirBooking {
 								user_choices = vab.vabTools.util.splitOnChar(br.readLine(), ",");
 							}
 							for(String c : user_choices){
-								for(int i = 0; i < numTickets; i++){
-									if(!vab.vabTools.save_route(c)){
-										System.out.println("Could not reserve seats");
+								if(!vab.vabTools.save_route(c, numTickets)){
+									System.out.println("Could not reserve seats");
+								}
+							}
+
+							break;
+						case 5:
+							vab.previous_flight_info();
+							break;
+							//System.out.println("6) Edit flight reservation information.");
+							//System.out.println("7) Edit profile information."); 
+
+						case 6:
+							vab.previous_flight_info();
+							ArrayList<HashMap<String, String>> reserved_flights = vab.vabTools.display_reserved_flights();
+							System.out.println("Which flight do you want to change?");
+							HashMap<String, String> target_flight = new HashMap<String, String>();
+							String flight_number, action;
+							boolean keep_going = true;
+							do{
+								if(DEBUG_MODE) flight_number = br.readLine();
+								else flight_number = scanner.nextLine();
+
+								for(HashMap<String, String> flight: reserved_flights){
+									if(flight.get("route_id").equalsIgnoreCase(flight_number)){
+										keep_going = false;
+										target_flight = flight;
+									}
+									else{
+										System.out.println("You haven't reserved seats on flight " + flight_number);
 									}
 								}
+							}while(keep_going);
 
-							}
+							keep_going = true;
+							int seat_amount;
+							do{
+								System.out.println("What do you want to do?");
+								System.out.println("A) Add Seats");
+								System.out.println("R) Remove Seats");
+								System.out.println("C) Cancel Flight");
+								if(DEBUG_MODE) action = br.readLine();
+								else action = scanner.nextLine();
+
+								if(Arrays.asList(("a,r,c".split(","))).contains(action.toLowerCase())){
+									keep_going = false;
+								}
+								else{
+									System.out.println("Invalid value. Please enter one of the menu options");
+								}
+								switch(action.toLowerCase()){
+								case "a":
+									seat_amount = 0;
+									System.out.println("How many seats do you want to add to your reservation?");
+									if(DEBUG_MODE) seat_amount = Integer.valueOf(br.readLine());
+									else{
+										keep_going = true;
+										while(keep_going){
+											try{
+												seat_amount = scanner.nextInt();
+												keep_going = false;
+											}catch(InputMismatchException e){
+
+											}
+										}
+									}
+									vab.vabTools.add_seats(flight_number, seat_amount, Integer.parseInt(target_flight.get("numtickets")));
+									break;
+								case "r":
+									seat_amount = 0;
+									System.out.println("How many seats do you want to remove from your reservation?");
+									if(DEBUG_MODE) seat_amount = Integer.valueOf(br.readLine());
+									else{
+										keep_going = true;
+										while(keep_going){
+											try{
+												seat_amount = scanner.nextInt();
+												keep_going = false;
+											}catch(InputMismatchException e){
+
+											}
+										}
+									}
+									//TODO: make sure that the amount subtracted isn't greater than what they got.
+									vab.vabTools.remove_seats(flight_number, seat_amount, Integer.parseInt(target_flight.get("numtickets")));
+
+									break;
+
+								case "c":
+									break;
+								}
+							}while(keep_going);
+							break;
+						case 7:
+							break;
 						}
 
-						catch(IllegalArgumentException e){
-							System.err.println("Invalid date input! Relaunch the program and adhere to the the format provided.");
-							System.exit(0);
-						}
-					}
-					else{
-						System.err.println("You failed to log in.");
-						System.err.println("You must login to use VoyAirBooking.");
-						System.exit(0);
-					}
+					}while(menu_choice != 0);
 				}
 			}
 			else{

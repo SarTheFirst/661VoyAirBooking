@@ -9,6 +9,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,13 @@ public class VoyAirTools {
 			System.err.println("Failed to initate VoyAirBooking. Please try again later.");
 		}
 
+	}
+	public ArrayList<HashMap<String, String>> get_airline_info(){
+		try {
+			return this.sqld.select("airline", "airline_name, airline_country", "", "ORDER BY airline_name");
+		} catch (SQLException e) {
+			return null;
+		}
 	}
 	public ArrayList<String> get_cities(){
 		try {
@@ -139,16 +147,17 @@ public class VoyAirTools {
 		return null;
 
 	}
-	public boolean save_route(String route_id){
+	public boolean save_route(String route_id, int numTickets){
 		HashMap<String, String> fields = new HashMap<String, String>();
 		fields.put("route_id",  route_id);
 		fields.put("passenger_id", this.user_id);
 		fields.put("cancelled", "0");
+		fields.put("numTickets", String.valueOf(numTickets));
 		if(!this.sqld.insert("reservation", fields)){
 			HashMap<String, String> update_to = new HashMap<String, String>();
 			try {
 				HashMap<String, String> route_res = this.sqld.select_first("route", "num_reserved_seats", "route_id="+route_id);
-				update_to.put("num_reserved_seats", String.valueOf(Integer.valueOf(route_res.get("num_reserved_seats")) + 1));
+				update_to.put("num_reserved_seats", String.valueOf(Integer.valueOf(route_res.get("num_reserved_seats"))+ numTickets));
 				return !(this.sqld.update("route", update_to, "route_id="+route_id));
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -157,6 +166,55 @@ public class VoyAirTools {
 		}
 		return false;
 	}
+
+	public boolean add_seats(String route_id, int numTickets, int already_reserved){
+		HashMap<String, String> update_to = new HashMap<String, String>();
+		update_to.put("numTickets", String.valueOf(numTickets + already_reserved));
+		if(!this.sqld.update("reservation", update_to, "route_id="+ route_id + " AND passenger_id="+this.user_id)){
+			try {
+				HashMap<String, String> route_res = this.sqld.select_first("route", "num_reserved_seats", "route_id="+route_id);
+				update_to.clear();
+				update_to.put("num_reserved_seats", String.valueOf(Integer.valueOf(route_res.get("num_reserved_seats"))+ numTickets));
+				return !(this.sqld.update("route", update_to, "route_id="+route_id));
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return false;
+	}
+	public boolean remove_seats(String route_id, int numTickets, int already_reserved) {
+		HashMap<String, String> update_to = new HashMap<String, String>();
+		update_to.put("numTickets", String.valueOf(already_reserved-numTickets));
+		if(!this.sqld.update("reservation", update_to, "route_id="+ route_id + " AND passenger_id="+this.user_id)){
+			try {
+				HashMap<String, String> route_res = this.sqld.select_first("route", "num_reserved_seats", "route_id="+route_id);
+				update_to.clear();
+				update_to.put("num_reserved_seats", String.valueOf(Integer.valueOf(route_res.get("num_reserved_seats"))+ numTickets));
+				return !(this.sqld.update("route", update_to, "route_id="+route_id));
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return false;
+	}
+
+	public ArrayList<HashMap<String, String>> display_reserved_flights(){
+		try {
+			ArrayList<HashMap<String, String>> reservation_info = this.sqld.select("reservation", "route_id, cancelled, numTickets", "passenger_id="+this.user_id);
+			for(HashMap<String, String> flight: reservation_info){
+				HashMap<String, String> airport_results = this.sqld.parseFirstResultSet(this.sqld.executeQuery("select * from route join airport on  airport_id  = departure_airport_id  where route_id =" + flight.get("route_id")), new ArrayList<String>(Arrays.asList("date, price, airport_name, airport_city".split(", "))));
+				flight.putAll(airport_results);
+			}
+			return reservation_info;
+		}catch(IndexOutOfBoundsException e){
+			return null;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 
 	public boolean register(String username, String password){
 		try {
@@ -214,7 +272,6 @@ public class VoyAirTools {
 			String encryptedPassword = new String(messageDigest.digest());
 
 			if(res.get("password").equals(encryptedPassword)){
-				System.out.println("Welcome back, " + username + "!");
 				this.setUser_id(res.get("passenger_id"));
 				return true;
 			}
@@ -229,6 +286,9 @@ public class VoyAirTools {
 			System.err.println("SQL Error");
 			return false;
 		}
+	}
+	public void log_out(){
+		this.setUser_id("-1");
 	}
 	public boolean is_logged_in() {
 		return user_id.equalsIgnoreCase("-1");

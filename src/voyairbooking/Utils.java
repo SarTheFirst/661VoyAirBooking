@@ -15,6 +15,9 @@ public class Utils{
 	private static final char DEFAULT_SEPARATOR = ',';
 	private static final char DEFAULT_QUOTE = '"';
 
+	public boolean getValidInRange(int low, int high, int input){
+		return (input < low || input > high);
+	}
 	public List<String> splitOnChar(String s, String c){
 		return Arrays.asList(s.split("\\s*"+c+"\\s*"));
 
