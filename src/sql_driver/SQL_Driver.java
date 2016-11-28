@@ -109,6 +109,11 @@ public class SQL_Driver {
 	public ArrayList<HashMap<String, String>> select(String table_name, String select, String where, boolean distinct) throws SQLException{
 		return select(table_name,  Arrays.asList(select.split("\\s*,\\s*")), where, "", distinct);
 	}
+	public ArrayList<HashMap<String, String>> select(String table_name, String select, String where, String other) throws SQLException {
+		return select(table_name, select, where, other, false);
+	}
+
+
 	public ArrayList<HashMap<String, String>> select(String table_name, String select, String where, String other,
 			boolean distinct) throws SQLException {
 		return select(table_name,  Arrays.asList(select.split("\\s*,\\s*")), where, other, distinct);
@@ -356,6 +361,5 @@ public class SQL_Driver {
 	public String replaceStringEnding(String str, String suffix){
 		return str.substring(0, str.length()-1) + suffix;
 	}
-
 
 }

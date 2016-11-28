@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -14,6 +15,10 @@ public class Utils{
 	private static final char DEFAULT_SEPARATOR = ',';
 	private static final char DEFAULT_QUOTE = '"';
 
+	public List<String> splitOnChar(String s, String c){
+		return Arrays.asList(s.split("\\s*"+c+"\\s*"));
+
+	}
 	public List<String> parseLine(String cvsLine) {
 		return parseCSVLine(cvsLine, DEFAULT_SEPARATOR, DEFAULT_QUOTE);
 	}

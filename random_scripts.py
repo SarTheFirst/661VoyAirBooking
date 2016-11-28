@@ -3,6 +3,8 @@ from random import randrange, randint
 import time
 import random
 from datetime import timedelta, datetime
+from dateutil.relativedelta import relativedelta
+
 def random_date(start, end):
 	delta = end - start
 	int_delta = (delta.days * 24 * 60 * 60) + delta.seconds
@@ -15,10 +17,9 @@ with open("data/routes.csv", "r") as in_file:
 		reader = csv.reader(in_file)
 		all = []
 		headers = next(reader)
-		price_index = headers.index("Num Reserved Seats")
+		price_index = headers.index("Date")
 		all.append(headers)
-
 		for row in reader:
-			row[price_index] = 0
+			row[price_index] = random_date(datetime.now(), datetime.now()+relativedelta(years=1)).strftime("%Y-%m-%d")
 			all.append(row)
 		writer.writerows(all)

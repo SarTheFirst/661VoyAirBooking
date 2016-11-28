@@ -16,6 +16,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.text.WordUtils;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 
@@ -42,12 +43,16 @@ public class VoyAirBooking {
 					String[] options = fname.split("_");
 					String other_id = options[options.length-2];
 					fields.put(fname, "STRING REFERENCES " + other_id + "(" + other_id + "_id) ON UPDATE CASCADE");
-					headers.set(i, fname);
+				}
+				else if(fname.contains("date")){
+					fields.put(fname,"DATE");
+
 				}
 				else{
 					fields.put(fname, "STRING");
-					headers.set(i, fname);
 				}
+				headers.set(i, fname);
+
 			}
 			this.vabTools.sqld.create_table(tableName, fields);
 
@@ -99,7 +104,6 @@ public class VoyAirBooking {
 			try {
 				br = new BufferedReader(new FileReader(Paths.get(System.getProperty("user.dir"), "tests", "test1.txt").toFile()));
 			} catch (FileNotFoundException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		}
@@ -225,15 +229,43 @@ public class VoyAirBooking {
 
 									for(HashMap<String, String> route: flight_leg){
 										SortedSet<String> keys = new TreeSet<String>(route.keySet());
+										System.out.printf("%-15s %-5s\n", WordUtils.capitalizeFully("route_id".replaceAll("_", " ")).replaceAll("Id", "ID"), route.get("route_id"));
+
 										for (String key : keys) { 
-											System.out.printf("%-60s %-10s\n", key, route.get(key));
+											// Users don't need to see that much stuff.
+											if(!key.contains("id") && !key.contains("num") && !key.contains("city")){
+												if(key.equalsIgnoreCase("price")){
+													System.out.printf("%-15s $%-5s\n", WordUtils.capitalizeFully(key.replaceAll("_", " ")), route.get(key));
+												}
+												else if(key.equalsIgnoreCase("date")){
+													System.out.printf("%-15s %-5s\n", WordUtils.capitalizeFully(key.replaceAll("_", " ")), vab.vabTools.print_datetime.print(vab.vabTools.sql_formatter.parseLocalDate(route.get(key))));
+												}
+												else{
+													System.out.printf("%-15s %-5s\n", WordUtils.capitalizeFully(key.replaceAll("_", " ")), route.get(key));
+												}
+											}
 										}
 										System.out.println("\n");
 									}
 								}
 							}
-						}
+							System.out.println("Please enter the route_ids of the flights you wish to take, seperated by commas.");
+							List<String> user_choices;
+							if(!DEBUG_MODE){
+								user_choices = vab.vabTools.util.splitOnChar(scanner.nextLine(), ",");
+							}
+							else{
+								user_choices = vab.vabTools.util.splitOnChar(br.readLine(), ",");
+							}
+							for(String c : user_choices){
+								for(int i = 0; i < numTickets; i++){
+									if(!vab.vabTools.save_route(c)){
+										System.out.println("Could not reserve seats");
+									}
+								}
 
+							}
+						}
 
 						catch(IllegalArgumentException e){
 							System.err.println("Invalid date input! Relaunch the program and adhere to the the format provided.");
@@ -250,7 +282,6 @@ public class VoyAirBooking {
 			else{
 			}
 		} catch (SQLException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

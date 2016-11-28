@@ -9,14 +9,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-
-import javax.swing.table.AbstractTableModel;
 
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
@@ -32,6 +28,9 @@ public class VoyAirTools {
 	protected Utils util;
 	protected DateTimeFormatter fmt = DateTimeFormat.forPattern("HH:mm");
 	protected DateTimeFormatter dtf = DateTimeFormat.forPattern("MM/dd/yyyy");
+	protected DateTimeFormatter sql_formatter = DateTimeFormat.forPattern("yyyy-MM-dd");
+	protected DateTimeFormatter print_datetime = DateTimeFormat.forPattern("MMM dd, y");
+
 	public VoyAirTools(boolean debugMode){
 		try {
 			this.sqld = new SQL_Driver(debugMode);
@@ -75,7 +74,8 @@ public class VoyAirTools {
 			for(String start: start_id){
 				for(String end: end_id){
 					g.dijkstra(start);
-					Possibilities.add(g.getThePath(end).split("\\s*->\\s*"));
+					List<String> allRes = this.util.splitOnChar(g.getThePath(end), "->");
+					Possibilities.add(allRes.toArray(new String[allRes.size()]));
 					System.out.println(g.getThePath(end));
 				}
 			}
@@ -106,13 +106,13 @@ public class VoyAirTools {
 			for(ArrayList<ArrayList<String>> aRoute : routes){
 				ArrayList<ArrayList<HashMap<String, String>>> route_leg = new ArrayList<ArrayList<HashMap<String, String>>>();
 				for(ArrayList<String> flight: aRoute){
-					ArrayList<HashMap<String, String>> route_details = this.sqld.select("route", "*", "route_id IN " + flight.toString().replaceAll("\\[", "(").replaceAll("\\]",")")) ;
+					ArrayList<HashMap<String, String>> route_details = this.sqld.select("route", "*", "route_id IN " + flight.toString().replaceAll("\\[", "(").replaceAll("\\]",")"), "ORDER BY date") ;
 
 					ArrayList<HashMap<String, String>> time_working_flights = new ArrayList<HashMap<String, String>>();
 					boolean first_pass = true;
 
 					for(HashMap<String, String> row: route_details){
-						LocalDate date = this.dtf.parseLocalDate(row.get("date"));
+						LocalDate date = this.sql_formatter.parseLocalDate(row.get("date"));
 						LocalTime time = this.fmt.parseLocalTime(row.get("time"));
 						if(numTickets + Integer.valueOf(row.get("num_reserved_seats")) <= Integer.valueOf(row.get("num_total_seats"))
 								&& ( takeoffDate.isBefore(date) || (takeoffDate.isEqual(date) && !takeoffTime.isBefore(time)))){
@@ -139,11 +139,23 @@ public class VoyAirTools {
 		return null;
 
 	}
-	public boolean save_route(String route_id, String user_id){
+	public boolean save_route(String route_id){
 		HashMap<String, String> fields = new HashMap<String, String>();
 		fields.put("route_id",  route_id);
-		fields.put("passenger_id", user_id);
-		return this.sqld.insert("transaction", fields);
+		fields.put("passenger_id", this.user_id);
+		fields.put("cancelled", "0");
+		if(!this.sqld.insert("reservation", fields)){
+			HashMap<String, String> update_to = new HashMap<String, String>();
+			try {
+				HashMap<String, String> route_res = this.sqld.select_first("route", "num_reserved_seats", "route_id="+route_id);
+				update_to.put("num_reserved_seats", String.valueOf(Integer.valueOf(route_res.get("num_reserved_seats")) + 1));
+				return !(this.sqld.update("route", update_to, "route_id="+route_id));
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
+		}
+		return false;
 	}
 
 	public boolean register(String username, String password){
