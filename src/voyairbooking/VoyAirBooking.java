@@ -278,20 +278,34 @@ public class VoyAirBooking {
 							}
 
 							LocalDate departureDate, arrivalDate;
-							LocalTime departureTime, arrivalTime;
+							LocalTime departureTime = null, arrivalTime = null;
 							int numTickets;
 							if(!DEBUG_MODE){
 								try{
-									System.out.println("When do you want to depart? Please use the format dd/MM/YYYY HH:mm");
-									String[] departureInput = scanner.nextLine().split(" ");
-									departureDate =  vab.vabTools.dtf.parseLocalDate(departureInput[0]);
-									departureTime =  vab.vabTools.fmt.parseLocalTime(departureInput[1]);
+									do{
+										System.out.println("When do you want to depart? Please use the format dd/MM/YYYY HH:mm");
+										String[] departureInput = scanner.nextLine().split(" ");
+										departureDate =  vab.vabTools.dtf.parseLocalDate(departureInput[0]);
+										if(departureDate.isBefore(LocalDate.now())){
+											System.out.println("You cannot reserve a flight that has already taken off!");
 
-									System.out.println("When do you want to arrive? Please use the format dd/MM/YYYY HH:mm");
-									String[] arrivalInput = scanner.nextLine().split(" ");
-									arrivalDate = vab.vabTools.dtf.parseLocalDate(arrivalInput[0]);
-									arrivalTime = vab.vabTools.fmt.parseLocalTime(arrivalInput[1]);
+										}
+										else{
+											departureTime =  vab.vabTools.fmt.parseLocalTime(departureInput[1]);
+										}
+									}while(departureDate.isBefore(LocalDate.now()));
 
+									do{
+										System.out.println("When do you want to arrive? Please use the format dd/MM/YYYY HH:mm");
+										String[] arrivalInput = scanner.nextLine().split(" ");
+										arrivalDate = vab.vabTools.dtf.parseLocalDate(arrivalInput[0]);
+										if(arrivalDate.isBefore(LocalDate.now())){
+											System.out.println("You cannot reserve a flight that has already taken off!");
+										}
+										else{
+											arrivalTime = vab.vabTools.fmt.parseLocalTime(arrivalInput[1]);
+										}
+									}while(arrivalDate.isBefore(LocalDate.now()));
 									String prompt = "How many tickets would you like to purchase? Please enter a positive integer";
 									numTickets = vab.vabTools.util.getPositiveNumber(scanner, prompt);
 								}
@@ -323,7 +337,7 @@ public class VoyAirBooking {
 							 */
 							// HAHAHA NOPE.
 							ArrayList<ArrayList<ArrayList<HashMap<String, String>>>> trimmed_flights = vab.vabTools.trim_routes(route_results, arrivalDate, departureDate, arrivalTime, departureTime, numTickets);
-							
+
 							for(int i = 0; i < trimmed_flights.size(); i++){
 								for(ArrayList<HashMap<String, String>> flight_leg: trimmed_flights.get(i)){
 									System.out.println("\n\nOptions for the flight from " + flight_leg.get(0).get("departure_city_name") + " to " + flight_leg.get(0).get("destination_city_name") + ": ");
@@ -368,8 +382,104 @@ public class VoyAirBooking {
 							String round_trip;
 							if(DEBUG_MODE) round_trip = br.readLine();
 							else round_trip = scanner.nextLine();
-							//TODO: Round trip
-							
+							if(round_trip.equalsIgnoreCase("yes") || round_trip.equalsIgnoreCase("y")){
+								if(!DEBUG_MODE){
+									try{
+										do{
+											System.out.println("When do you want to depart? Please use the format dd/MM/YYYY HH:mm");
+											String[] departureInput = scanner.nextLine().split(" ");
+											departureDate =  vab.vabTools.dtf.parseLocalDate(departureInput[0]);
+											if(departureDate.isBefore(LocalDate.now())){
+												System.out.println("You cannot reserve a flight that has already taken off!");
+
+											}
+											else{
+												departureTime =  vab.vabTools.fmt.parseLocalTime(departureInput[1]);
+											}
+										}while(departureDate.isBefore(LocalDate.now()));
+
+										do{
+											System.out.println("When do you want to arrive? Please use the format dd/MM/YYYY HH:mm");
+											String[] arrivalInput = scanner.nextLine().split(" ");
+											arrivalDate = vab.vabTools.dtf.parseLocalDate(arrivalInput[0]);
+											if(arrivalDate.isBefore(LocalDate.now())){
+												System.out.println("You cannot reserve a flight that has already taken off!");
+											}
+											else{
+												arrivalTime = vab.vabTools.fmt.parseLocalTime(arrivalInput[1]);
+											}
+										}while(arrivalDate.isBefore(LocalDate.now()));
+										String prompt = "How many tickets would you like to purchase? Please enter a positive integer";
+										numTickets = vab.vabTools.util.getPositiveNumber(scanner, prompt);
+									}
+									catch(IllegalArgumentException e){
+										System.err.println("Invalid date input!");
+										continue;
+									}
+								}
+								else{
+									System.out.println("When do you want to depart? Please use the format dd/MM/YYYY HH:mm");
+									String[] departureInput = br.readLine().split(" ");
+									departureDate =  vab.vabTools.dtf.parseLocalDate(departureInput[0]);
+									departureTime =  vab.vabTools.fmt.parseLocalTime(departureInput[1]);
+
+									System.out.println("When do you want to arrive? Please use the format dd/MM/YYYY HH:mm");
+									String[] arrivalInput = br.readLine().split(" ");
+									arrivalDate = vab.vabTools.dtf.parseLocalDate(arrivalInput[0]);
+									arrivalTime = vab.vabTools.fmt.parseLocalTime(arrivalInput[1]);
+
+									System.out.println("How many tickets would you like to purchase? Please enter a positive integer");
+									numTickets = Integer.valueOf(br.readLine());
+								}
+								route_results = vab.vabTools.get_routes(arrival_airport, departing_airport);
+								/*
+								 * HashMap: Route row
+								 * ArrayList: Leg Options
+								 * ArrayList: Flight Leg
+								 * ArrayList: Flight Options
+								 */
+								// HAHAHA NOPE.
+								trimmed_flights = vab.vabTools.trim_routes(route_results, arrivalDate, departureDate, arrivalTime, departureTime, numTickets);
+								for(int i = 0; i < trimmed_flights.size(); i++){
+									for(ArrayList<HashMap<String, String>> flight_leg: trimmed_flights.get(i)){
+										System.out.println("\n\nOptions for the flight from " + flight_leg.get(0).get("departure_city_name") + " to " + flight_leg.get(0).get("destination_city_name") + ": ");
+
+										for(HashMap<String, String> route: flight_leg){
+											SortedSet<String> keys = new TreeSet<String>(route.keySet());
+											System.out.printf("%-15s %-5s\n", WordUtils.capitalizeFully("route_id".replaceAll("_", " ")).replaceAll("Id", "ID"), route.get("route_id"));
+
+											for (String key : keys) { 
+												// Users don't need to see that much stuff.
+												if(!key.contains("id") && !key.contains("num") && !key.contains("city")){
+													if(key.equalsIgnoreCase("price")){
+														System.out.printf("%-15s $%-5s\n", WordUtils.capitalizeFully(key.replaceAll("_", " ")), route.get(key));
+													}
+													else if(key.equalsIgnoreCase("date")){
+														System.out.printf("%-15s %-5s\n", WordUtils.capitalizeFully(key.replaceAll("_", " ")), vab.vabTools.print_datetime.print(vab.vabTools.sql_formatter.parseLocalDate(route.get(key))));
+													}
+													else{
+														System.out.printf("%-15s %-5s\n", WordUtils.capitalizeFully(key.replaceAll("_", " ")), route.get(key));
+													}
+												}
+											}
+											System.out.println("\n");
+										}
+									}
+								}
+								System.out.println("Please enter the route_ids of the flights you wish to take, seperated by commas.");
+								if(!DEBUG_MODE){
+									user_choices = vab.vabTools.util.splitOnChar(scanner.nextLine(), ",");
+								}
+								else{
+									user_choices = vab.vabTools.util.splitOnChar(br.readLine(), ",");
+								}
+								for(String c : user_choices){
+									if(!vab.vabTools.save_route(c, numTickets)){
+										System.out.println("Could not reserve seats");
+									}
+								}
+
+							}
 							break;
 						case 5:
 							vab.previous_flight_info();
