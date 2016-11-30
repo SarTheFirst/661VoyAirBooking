@@ -745,7 +745,7 @@ public class GUI extends javax.swing.JFrame {
 		String lastName = last_name_field.getText();
 		String email = email_field.getText();
 
-		if(ev.isValid(email)){
+		if(!ev.isValid(email)){
 			registerButton.setSelected(false);
 			JOptionPane.showConfirmDialog(null, 
 					"Incorrect Input", 
@@ -760,6 +760,7 @@ public class GUI extends javax.swing.JFrame {
 				JOptionPane.showConfirmDialog(null,
 						"Registration succesful! Welcome " + firstName,
 						"Registration success.",
+						JOptionPane.INFORMATION_MESSAGE,
 						JOptionPane.OK_OPTION
 						);
 				break;
