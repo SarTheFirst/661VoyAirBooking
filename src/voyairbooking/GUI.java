@@ -909,7 +909,9 @@ public class GUI extends javax.swing.JFrame {
 	}//GEN-LAST:event_historyAndInfoActionPerformed
 
 	private void round_tripActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_round_tripActionPerformed
-		JOptionPane.showConfirmDialog(null, roundTripPanel);
+		if(round_trip.isSelected()){
+		JOptionPane.showMessageDialog(null, roundTripPanel);
+		}
 	}//GEN-LAST:event_round_tripActionPerformed
 
 	private boolean showLoginDialog() {
