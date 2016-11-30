@@ -6,7 +6,6 @@
 package voyairbooking;
 
 import java.awt.BorderLayout;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Point;
@@ -17,14 +16,12 @@ import java.util.HashMap;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
-import javax.swing.ButtonModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
@@ -124,6 +121,13 @@ public class GUI extends javax.swing.JFrame {
 		email_field = new javax.swing.JTextField();
 		registerButton = new javax.swing.JButton();
 		AccountInfoPanel = new javax.swing.JPanel();
+		roundTripPanel = new javax.swing.JPanel();
+		arrivalRoundTripDate = new org.freixas.jcalendar.JCalendarCombo();
+		roundTripTimeDep = new javax.swing.JSpinner(new SpinnerDateModel());
+		roundTripTimeArr = new javax.swing.JSpinner(new SpinnerDateModel());
+		roundTripDepText = new javax.swing.JLabel();
+		roundTripArrText = new javax.swing.JLabel();
+		departureRoundTripDate = new org.freixas.jcalendar.JCalendarCombo();
 		departingCityList = new javax.swing.JComboBox<>();
 		deptartingCityText = new javax.swing.JLabel();
 		ArrivalCItyText = new javax.swing.JLabel();
@@ -310,6 +314,64 @@ public class GUI extends javax.swing.JFrame {
 				.addGap(0, 100, Short.MAX_VALUE)
 				);
 
+		Date dt1 = new Date();
+		DateTime dtOrg1 = new DateTime(dt1);
+		arrivalRoundTripDate.setDate(dtOrg1.plusDays(1).toDate());
+
+		timeSpinnerDeparture.setEditor(new JSpinner.DateEditor(timeSpinnerDeparture, "HH:mm"));
+		timeSpinnerDeparture.setValue(new Date()); // will only show the current time
+
+		timeSpinnerArrival.setEditor(new JSpinner.DateEditor(timeSpinnerArrival, "HH:mm"));
+		timeSpinnerArrival.setValue(new Date()); // will only show the current time
+
+		roundTripDepText.setText("<html>When do you<br>want to leave?</html");
+
+		roundTripArrText.setText("<html>When do you<br>want to arrive?</html");
+
+		javax.swing.GroupLayout roundTripPanelLayout = new javax.swing.GroupLayout(roundTripPanel);
+		roundTripPanel.setLayout(roundTripPanelLayout);
+		roundTripPanelLayout.setHorizontalGroup(
+				roundTripPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+				.addGroup(javax.swing.GroupLayout.Alignment.TRAILING, roundTripPanelLayout.createSequentialGroup()
+						.addContainerGap(131, Short.MAX_VALUE)
+						.addComponent(departureRoundTripDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+						.addGap(13, 13, 13)
+						.addComponent(roundTripTimeDep, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+						.addContainerGap())
+				.addGroup(roundTripPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+						.addGroup(roundTripPanelLayout.createSequentialGroup()
+								.addContainerGap()
+								.addGroup(roundTripPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+										.addComponent(roundTripDepText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+										.addGroup(roundTripPanelLayout.createSequentialGroup()
+												.addComponent(roundTripArrText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+												.addGap(18, 18, 18)
+												.addComponent(arrivalRoundTripDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+												.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+												.addComponent(roundTripTimeArr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+								.addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+				);
+		roundTripPanelLayout.setVerticalGroup(
+				roundTripPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+				.addGroup(roundTripPanelLayout.createSequentialGroup()
+						.addContainerGap()
+						.addGroup(roundTripPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+								.addComponent(departureRoundTripDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+								.addComponent(roundTripTimeDep, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+						.addContainerGap(57, Short.MAX_VALUE))
+				.addGroup(roundTripPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+						.addGroup(roundTripPanelLayout.createSequentialGroup()
+								.addGap(11, 11, 11)
+								.addComponent(roundTripDepText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+								.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+								.addGroup(roundTripPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+										.addGroup(roundTripPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+												.addComponent(roundTripTimeArr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+												.addComponent(arrivalRoundTripDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+										.addComponent(roundTripArrText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+								.addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+				);
+
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 		addComponentListener(new java.awt.event.ComponentAdapter() {
 			public void componentShown(java.awt.event.ComponentEvent evt) {
@@ -320,12 +382,12 @@ public class GUI extends javax.swing.JFrame {
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
 		departingCityList.setModel(model);
 		departingCityList.addAncestorListener(new javax.swing.event.AncestorListener() {
-			public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
-			}
 			public void ancestorAdded(javax.swing.event.AncestorEvent evt) {
 				departingCityListAncestorAdded(evt);
 			}
 			public void ancestorRemoved(javax.swing.event.AncestorEvent evt) {
+			}
+			public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
 			}
 		});
 
@@ -335,12 +397,12 @@ public class GUI extends javax.swing.JFrame {
 
 		destinationCityList.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 		destinationCityList.addAncestorListener(new javax.swing.event.AncestorListener() {
-			public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
-			}
 			public void ancestorAdded(javax.swing.event.AncestorEvent evt) {
 				destinationCityListAncestorAdded(evt);
 			}
 			public void ancestorRemoved(javax.swing.event.AncestorEvent evt) {
+			}
+			public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
 			}
 		});
 
@@ -392,6 +454,11 @@ public class GUI extends javax.swing.JFrame {
 		ticketAmount.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
 
 		round_trip.setText("Round Trip?");
+		round_trip.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				round_tripActionPerformed(evt);
+			}
+		});
 
 		historyAndInfo.setText("Account Information and History");
 		historyAndInfo.addActionListener(new java.awt.event.ActionListener() {
@@ -517,8 +584,21 @@ public class GUI extends javax.swing.JFrame {
 			LocalTime depTime = LocalTime.parse(departureTime);
 			LocalTime arrTime = LocalTime.parse(arrivalTime);
 			ArrayList<ArrayList<ArrayList<String>>> all_routes = this.vab.vabTools.get_routes(from, to);
+
 			if (all_routes != null) {
+				
 				ArrayList<ArrayList<ArrayList<HashMap<String, String>>>> trimmed_flights = vab.vabTools.trim_routes(all_routes, arrDate, depDate, arrTime, depTime, Integer.valueOf(ticketAmount.getValue().toString()));
+				if(round_trip.isSelected()){
+					LocalDate depDate1 = LocalDate.fromDateFields(departureRoundTripDate.getDate());
+					LocalDate arrDate1 = LocalDate.fromDateFields(arrivalRoundTripDate.getDate());
+					String departureTime1 = ((JSpinner.DateEditor) roundTripTimeDep.getEditor()).getFormat().format(roundTripTimeDep.getValue());
+					String arrivalTime1 = ((JSpinner.DateEditor) roundTripTimeArr.getEditor()).getFormat().format(roundTripTimeArr.getValue());
+					LocalTime depTime1 = LocalTime.parse(departureTime1);
+					LocalTime arrTime1 = LocalTime.parse(arrivalTime1);
+					ArrayList<ArrayList<ArrayList<String>>> return_flights = this.vab.vabTools.get_routes(to, from);
+					ArrayList<ArrayList<ArrayList<HashMap<String, String>>>> returned_trimmed_flights = vab.vabTools.trim_routes(return_flights, arrDate1, depDate1, arrTime1, depTime1, Integer.valueOf(ticketAmount.getValue().toString()));
+					trimmed_flights.addAll(returned_trimmed_flights);
+				}
 				displayResults(trimmed_flights);
 			} else {
 				JOptionPane.showMessageDialog(null,
@@ -642,7 +722,6 @@ public class GUI extends javax.swing.JFrame {
 
 	private void bookButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bookButtonActionPerformed
 		frame.setVisible(false);
-		boolean roundTrip = round_trip.isSelected();
 		int numTickets = Integer.valueOf(ticketAmount.getValue().toString());
 		for (String flight_id : selected_flights) {
 			if (!vab.vabTools.save_route(flight_id, numTickets)) {
@@ -778,7 +857,7 @@ public class GUI extends javax.swing.JFrame {
 			}
 
 		}
-		
+
 
 	}
 	private void formComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
@@ -827,6 +906,10 @@ public class GUI extends javax.swing.JFrame {
 		accountInfo.pack();
 		accountInfo.setVisible(true);
 	}//GEN-LAST:event_historyAndInfoActionPerformed
+
+	private void round_tripActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_round_tripActionPerformed
+		JOptionPane.showConfirmDialog(null, roundTripPanel);
+	}//GEN-LAST:event_round_tripActionPerformed
 
 	private boolean showLoginDialog() {
 		int result = JOptionPane.showConfirmDialog(null, registerPanel, "Login to VoyAirBooking",
@@ -939,10 +1022,12 @@ public class GUI extends javax.swing.JFrame {
 	private javax.swing.JToggleButton aboutButton;
 	private javax.swing.JDialog aboutPopUp;
 	private org.freixas.jcalendar.JCalendarCombo arrivalDate;
+	private org.freixas.jcalendar.JCalendarCombo arrivalRoundTripDate;
 	private javax.swing.JLabel arrivalTimeText;
 	private javax.swing.JButton bookButton;
 	private javax.swing.JComboBox<String> departingCityList;
 	private org.freixas.jcalendar.JCalendarCombo departureDate;
+	private org.freixas.jcalendar.JCalendarCombo departureRoundTripDate;
 	private javax.swing.JLabel departureTimeText;
 	private javax.swing.JLabel deptartingCityText;
 	private javax.swing.JComboBox<String> destinationCityList;
@@ -965,6 +1050,11 @@ public class GUI extends javax.swing.JFrame {
 	private javax.swing.JPanel registrationInfoPanel;
 	private javax.swing.JScrollPane resultScroll;
 	private javax.swing.JPanel resultsPanel;
+	private javax.swing.JLabel roundTripArrText;
+	private javax.swing.JLabel roundTripDepText;
+	private javax.swing.JPanel roundTripPanel;
+	private javax.swing.JSpinner roundTripTimeArr;
+	private javax.swing.JSpinner roundTripTimeDep;
 	private javax.swing.JCheckBox round_trip;
 	private javax.swing.JSpinner ticketAmount;
 	private javax.swing.JSpinner timeSpinnerArrival;
