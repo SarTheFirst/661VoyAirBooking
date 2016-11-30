@@ -90,7 +90,8 @@ public class VoyAirTools {
 				for (String start : start_id) {
 					for (String end : end_id) {
 						g.dijkstra(start);
-						List<String> allRes = this.util.splitOnChar(g.getThePath(end), "->");
+						String thePath = g.getThePath(end);
+						List<String> allRes = this.util.splitOnChar(thePath, "->");
 						Possibilities.add(allRes.toArray(new String[allRes.size()]));
 						System.out.println(g.getThePath(end));
 					}
@@ -196,7 +197,7 @@ public class VoyAirTools {
 		HashMap<String, String> update_to = new HashMap<String, String>();
 		update_to.put("cancelled", "0");
 		update_to.put("numTickets", numTickets);
-		if (!this.sqld.update("reservation", update_to, "route_id=" + route_id + " AND passenger_id=" + this.user_id)) {
+		if (!this.sqld.execute("UPDATE 'reservation' SET 'cancelled' = '0', numtickets='" + numTickets + "' WHERE route_id='"+ route_id+"' AND passenger_id='"+this.user_id+"' COLLATE NOCASE")) {
 			HashMap<String, String> route_res;
 			try {
 				route_res = this.sqld.select_first("route", "num_reserved_seats", "route_id=" + route_id);
@@ -215,7 +216,7 @@ public class VoyAirTools {
 	public boolean cancelFlight(String route_id, String ticketAmnt){
 		HashMap<String, String> update_to = new HashMap<String, String>();
 		update_to.put("cancelled", "1");
-		if (!this.sqld.update("reservation", update_to, "route_id=" + route_id + " AND passenger_id=" + this.user_id)) {
+		if (!this.sqld.execute("UPDATE 'reservation' SET 'cancelled' = '1' WHERE route_id='"+ route_id+"' AND passenger_id='"+this.user_id+"' COLLATE NOCASE")) {
 			HashMap<String, String> route_res;
 			try {
 				route_res = this.sqld.select_first("route", "num_reserved_seats", "route_id=" + route_id);
@@ -231,8 +232,9 @@ public class VoyAirTools {
 	}
 	public boolean add_seats(String route_id, int numTickets, int already_reserved) {
 		HashMap<String, String> update_to = new HashMap<String, String>();
-		update_to.put("numTickets", String.valueOf(numTickets + already_reserved));
-		if (!this.sqld.update("reservation", update_to, "route_id=" + route_id + " AND passenger_id=" + this.user_id)) {
+		update_to.put("numtickets", String.valueOf(numTickets + already_reserved));
+		
+		if (!this.sqld.execute("UPDATE 'reservation' SET 'numtickets' = '"+ String.valueOf(numTickets + already_reserved) +"' WHERE route_id='"+ route_id+"' AND passenger_id='"+this.user_id+"' COLLATE NOCASE")) {
 			try {
 				HashMap<String, String> route_res = this.sqld.select_first("route", "num_reserved_seats", "route_id=" + route_id);
 				update_to.clear();
@@ -247,8 +249,9 @@ public class VoyAirTools {
 
 	public boolean remove_seats(String route_id, int numTickets, int already_reserved) {
 		HashMap<String, String> update_to = new HashMap<String, String>();
-		update_to.put("numTickets", String.valueOf(already_reserved - numTickets));
-		if (!this.sqld.update("reservation", update_to, "route_id=" + route_id + " AND passenger_id=" + this.user_id)) {
+		update_to.put("numtickets", String.valueOf(already_reserved - numTickets));
+
+		if (!this.sqld.execute("UPDATE 'reservation' SET 'numtickets' = '"+ String.valueOf(already_reserved - numTickets) +"' WHERE route_id='"+ route_id+"' AND passenger_id='"+this.user_id+"' COLLATE NOCASE")) {
 			try {
 				HashMap<String, String> route_res = this.sqld.select_first("route", "num_reserved_seats", "route_id=" + route_id);
 				update_to.clear();
