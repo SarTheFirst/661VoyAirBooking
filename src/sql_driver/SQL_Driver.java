@@ -327,7 +327,7 @@ public class SQL_Driver {
 		for(int i = 0; i < res.length; i++){
 			if(!newWhere.isEmpty()){
 				newWhere += allMatches.get(counter++);
-				newWhere += "'" + res[i].trim()+"'";
+				newWhere += " '" + res[i].trim()+"'";
 			}
 			else{
 				newWhere += res[i];
