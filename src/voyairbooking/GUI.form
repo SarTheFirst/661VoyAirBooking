@@ -254,82 +254,53 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="1" attributes="0">
-                  <EmptySpace pref="131" max="32767" attributes="0"/>
-                  <Component id="departureRoundTripDate" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
-                  <Component id="roundTripTimeDep" min="-2" max="-2" attributes="0"/>
+              <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-              </Group>
-              <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="roundTripDepText" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="roundTripArrText" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
-                              <Component id="arrivalRoundTripDate" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="roundTripTimeArr" min="-2" max="-2" attributes="0"/>
-                          </Group>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="roundTripDepText" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                          <Component id="roundTripDepDate" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="roundTripDepTime" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="roundTripArrText" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                          <Component id="roundTripArrDate" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="roundTripArrTime" min="-2" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
+                  <EmptySpace pref="18" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="departureRoundTripDate" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="roundTripTimeDep" alignment="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <EmptySpace pref="57" max="32767" attributes="0"/>
-              </Group>
-              <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="1" attributes="0">
                       <Component id="roundTripDepText" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Group type="103" alignment="1" groupAlignment="3" attributes="0">
-                              <Component id="roundTripTimeArr" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="arrivalRoundTripDate" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="roundTripArrText" alignment="1" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="roundTripDepDate" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="roundTripDepTime" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="1" attributes="0">
+                      <Component id="roundTripArrText" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="roundTripArrDate" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="roundTripArrTime" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
       </Layout>
       <SubComponents>
-        <Component class="org.freixas.jcalendar.JCalendarCombo" name="arrivalRoundTripDate">
-          <Properties>
-            <Property name="date" type="java.util.Date" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="dtOrg1.plusDays(1).toDate()" type="code"/>
-            </Property>
-          </Properties>
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="Date dt1 = new Date();&#xa;DateTime dtOrg1 = new DateTime(dt1);"/>
-          </AuxValues>
-        </Component>
-        <Component class="javax.swing.JSpinner" name="roundTripTimeDep">
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JSpinner(new SpinnerDateModel())"/>
-            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="timeSpinnerDeparture.setEditor(new JSpinner.DateEditor(timeSpinnerDeparture, &quot;HH:mm&quot;));&#xa;timeSpinnerDeparture.setValue(new Date()); // will only show the current time"/>
-          </AuxValues>
-        </Component>
-        <Component class="javax.swing.JSpinner" name="roundTripTimeArr">
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JSpinner(new SpinnerDateModel())"/>
-            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="timeSpinnerArrival.setEditor(new JSpinner.DateEditor(timeSpinnerArrival, &quot;HH:mm&quot;));&#xa;timeSpinnerArrival.setValue(new Date()); // will only show the current time"/>
-          </AuxValues>
-        </Component>
         <Component class="javax.swing.JLabel" name="roundTripDepText">
           <Properties>
             <Property name="text" type="java.lang.String" value="&lt;html&gt;When do you&lt;br&gt;want to leave?&lt;/html"/>
@@ -340,7 +311,19 @@
             <Property name="text" type="java.lang.String" value="&lt;html&gt;When do you&lt;br&gt;want to arrive?&lt;/html"/>
           </Properties>
         </Component>
-        <Component class="org.freixas.jcalendar.JCalendarCombo" name="departureRoundTripDate">
+        <Component class="org.freixas.jcalendar.JCalendarCombo" name="roundTripDepDate">
+        </Component>
+        <Component class="org.freixas.jcalendar.JCalendarCombo" name="roundTripArrDate">
+        </Component>
+        <Component class="javax.swing.JSpinner" name="roundTripDepTime">
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="SpinnerDateModel depTimeModel = new SpinnerDateModel();&#xa;depTimeModel.setCalendarField(Calendar.MINUTE);&#xa;&#xa;roundTripDepTime.setModel(depTimeModel);&#xa;roundTripDepTime.setEditor(new JSpinner.DateEditor(roundTripDepTime, &quot;HH:mm&quot;));"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JSpinner" name="roundTripArrTime">
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="SpinnerDateModel arrTimeModel = new SpinnerDateModel();&#xa;arrTimeModel.setCalendarField(Calendar.MINUTE);&#xa;&#xa;roundTripArrTime.setModel(arrTimeModel);&#xa;roundTripArrTime.setEditor(new JSpinner.DateEditor(roundTripArrTime, &quot;HH:mm&quot;));"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>
