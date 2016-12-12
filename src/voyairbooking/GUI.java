@@ -60,7 +60,7 @@ public class GUI extends javax.swing.JFrame {
 
 	//JButton cancel_book_button = 
 	JButton cancel_book_button = new JButton("Cancel or Rebook selected flight");
-	JButton add_seats_button = new JButton("Add seats to  Selected Flight");
+	JButton add_seats_button = new JButton("Add seats to Selected Flight");
 	JButton remove_seats_button =  new JButton("Remove seats Selected Flight");
 
 	HashMap<String, HashMap<String, String>> available_routes = new HashMap<String, HashMap<String, String>>();
